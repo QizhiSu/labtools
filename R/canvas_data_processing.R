@@ -70,6 +70,7 @@ read_canvas <- function(path,
       )
     ) %>%
       dplyr::select(2:6, 9:16) %>%
+      filter(Name != "") %>%
       mutate(Score = round(rowMeans(select(., Match, R_match))),
              RT = round(as.numeric(RT), 3),
              RT_2D = round(as.numeric(RT_2D), 3),
