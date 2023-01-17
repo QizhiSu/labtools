@@ -1,1 +1,3 @@
-utils::globalVariables(c('.', 'Area', 'CAS', 'Height', 'MW', 'Match', 'Possibility', 'RI', 'RT', 'RT_2D', 'R_match', 'Score'))
+utils::globalVariables(c('.', 'Area', 'CAS', 'Height', 'MW', 'Match',
+                         'Possibility', 'RI', 'RT', 'RT_2D', 'R_match', 'Score',
+                         'Name', 'Delta_RI', 'NIST_RI', 'R_RI', "P_RI"))

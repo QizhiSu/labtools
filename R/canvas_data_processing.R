@@ -22,8 +22,12 @@
 #'
 #' @param path Path of the folder contains .*txt files originally exported from
 #' Canvas
-#' @param ri_align_tolerance RI tolerance acceptable for alignment
-#' @param rt_2d_tolerance 2nd dimension RT acceptable for alignment
+#' @param ri_iden_tol RI tolerance acceptable for identification when experimental
+#' reference RI is available, normally 30
+#' @param ri_p_iden_tol RI tolerance acceptable for identification when experimental
+#' reference RI is not available, and predicted one is used, normally 100
+#' @param ri_align_tol RI tolerance acceptable for alignment
+#' @param rt_2d_align_tol 2nd dimension RT acceptable for alignment
 #' @param keep whether 'area', 'height', or 'both', telling which information to
 #' be kept. If keep = 'area', then only peak areas of the compounds in detected
 #' samples will be kept; if keep = 'height', then only peak height of the compounds
@@ -39,16 +43,23 @@
 #' @importFrom glue glue
 #' @importFrom utils capture.output read.table
 read_canvas <- function(path,
-                        ri_align_tolerance = 50,
-                        rt_2d_tolerance = 0.05,
+                        ri_iden_tol = 30,
+                        ri_p_iden_tol = 100,
+                        ri_align_tol = 50,
+                        rt_2d_align_tol = 0.1,
                         keep = "area") { # can be 'area', 'height', or 'both'
   ## A function to read and organize single canvas data
   read_single <- function(file) {
+    # read in reference RI and predicted RI
+    reference_ri <- readRDS("inst/reference_ri.RDS")
+    predict_ri <- readRDS("inst/predict_ri.RDS")
+
     data <- read.table(
       file,
       header = TRUE,
-      sep = '\t',
-      fileEncoding = 'gbk',
+      sep = "\t",
+      quote = "",
+      fileEncoding = "gbk",
       col.names = c(
         "Number",
         "Name",
@@ -81,27 +92,84 @@ read_canvas <- function(path,
              R_match = as.numeric(R_match),
              Possibility = round(as.numeric(Possibility)),
              RI = as.numeric(RI),
-             MW = as.numeric(MW)) %>%
+             MW = as.numeric(MW),
+             R_RI = reference_ri$RI[match(Name, reference_ri$Name)],
+             NIST_RI = ifelse(grepl("A|N", NIST_RI), NA, NIST_RI),
+             NIST_RI = sub("-.*", "", NIST_RI) %>% as.numeric(),
+             NIST_RI = ifelse(is.na(NIST_RI), R_RI, NIST_RI),
+             P_RI = ifelse(is.na(NIST_RI),
+                           predict_ri$RI[match(Name, predict_ri$Name)],
+                           NA) %>%
+               round(2)) %>%
+      select(-R_RI) %>%
       relocate(Score, .after = R_match) %>%
+      relocate(P_RI, .after = NIST_RI) %>%
       arrange(RT)
+
+    ## evaluate identification based on delta RI
+    data$Delta_RI <- NA
+    for(i in 1:nrow(data)) {
+      data$Delta_RI[i] <- abs(data$NIST_RI[i] - data$RI[i])
+      if(!is.na(data$NIST_RI[i])){
+        if(!is.na(data$Delta_RI[i]) & data$Delta_RI[i] > ri_iden_tol) {
+          message(
+            glue::glue(
+              'Compound {data$Name[i]} has RI {data$RI[i]} with reference RI {data$NIST_RI[i]} ',
+              'in NIST. The difference is {data$Delta_RI[i]} ',
+              'which is higher than the accpetable tolerance {ri_iden_tol}.\n\n'
+            )
+          )
+        }
+      }else{
+        if(!is.na(data$P_RI[i])) {
+          if(!is.na(data$Delta_RI[i]) & data$Delta_RI[i] > ri_p_iden_tol) {
+            message(
+              glue::glue(
+                'Compound {data$Name[i]} RI {data$RI[i]} with no reference RI ',
+                'in NIST, but its predicted RI is {data$P_RI[i]} ',
+                'The difference is {data$Delta_RI[i]} ',
+                'which is higher than the accpetable tolerance {ri_iden_tol}.\n\n'
+              )
+            )
+          }
+        }
+      }
+    }
+
+    data <- relocate(data, Delta_RI, .after = NIST_RI)
 
     return(data)
   }
 
-
 #-------------------------------------------------------------------------------
-
   ## read all files into a list
   # get file paths of all files in the path
   files_path <- list.files(path, pattern = '.*txt', full.names = TRUE)
   file_name <- sub("\\.txt", "", basename(files_path)) # get the file name
   file_name <- gsub("-", '_', file_name) # replace "-" with '_'
-  files <- lapply(files_path, read_single) # read all files into a list
+  # files <- lapply(files_path, read_single) # read all files into a list
+  # Read sample by sample and prompt up message for each sample to help trace back
+  # where mistake could have been made
+  message("Reading samples")
+  files <- list() # create a list
+  for(i in 1:length(file_name)) {
+    message(glue::glue("Reading {file_name[i]}...\n\n"))
+    files[[i]] <- read_single(files_path[i])
+    data <- files[[i]]
+    # tell which compounds have been repeatedly identified
+    repeated_cmp <- paste(unique(data$Name[duplicated(data$Name)]), collapse = '\n')
+    message(
+      glue::glue("The following compounds have been repeatedly identified in the sample ",
+                 "{file_name[i]}:\n",
+                 '{repeated_cmp}\n',
+                 '--------------------------------------------------------------------------------\n\n')
+    )
+  }
   names(files) <- file_name # rename list elements with their correspondent file name
   # add file name to column names of each list element
   files <-
     purrr::imap(files, ~ rename_with(.x, function(z)
-      paste(z, .y, sep = "_#"),-c("Name")))
+      paste(z, .y, sep = "_#"), -c("Name")))
 
 #-------------------------------------------------------------------------------
 
@@ -126,13 +194,13 @@ read_canvas <- function(path,
   }
 
 #-------------------------------------------------------------------------------
-
   ## check alignment and warnings probable misalignment
   # evaluate compound by compound to see if different sample could have significantly
   # different RI or RT_2D
+  message("\nEvaluating conflicts amongs samples...")
   for (i in 1:nrow(cb_data)) {
     if(!is.na(cb_data$RI_SD[i])) { # if RI_SD is.na, it suggests that only detected in one sample
-      if(cb_data$RI_SD[i] > ri_align_tolerance) {
+      if(cb_data$RI_SD[i] > ri_align_tol) {
         # if RI_SD is smaller than the defined value, message which samples could have problem
         samples <-
           cb_data %>%
@@ -156,12 +224,11 @@ read_canvas <- function(path,
               'as detailed below:\n',
               '{print_and_capture(samples)}\n',
               'The average RI was {rowMeans(samples)}. Sample {sample_max} had ',
-              'maximum RI, while {sample_min} had minimum.\n',
-              '**************************************************************\n\n'
+              'maximum RI, while {sample_min} had minimum.\n\n'
             )
           )
       }else{
-          if(cb_data$RT_2D_SD[i] > rt_2d_tolerance) {
+          if(cb_data$RT_2D_SD[i] > rt_2d_align_tol) {
             samples <-
               cb_data %>%
               select(matches('^RT_2D') & -contains('SD')) %>% # subset RI columns
@@ -182,9 +249,8 @@ read_canvas <- function(path,
                 'samples, but the 2nd dimesional retention time varied significantly ',
                 'across samples as detailed below:\n',
                 '{print_and_capture(samples)}\n',
-                'The average RI was {rowMeans(samples)}. Sample {sample_max} had ',
-                'maximum RI, while {sample_min} had minimum.\n',
-                '**************************************************************\n\n'
+                'The average 2d RT was {rowMeans(samples)} s. Sample {sample_max} had ',
+                'maximum 2d RT, while {sample_min} had minimum.\n\n'
               )
             )
           }
@@ -212,9 +278,9 @@ read_canvas <- function(path,
            CAS = coalesce(!!!select(., contains("CAS"))),
            Score = pmax(!!!select(., contains("Score")), na.rm = TRUE),
            Count = paste0(rowSums(!is.na(select(., contains("Area")))),
-                          "/", length(samples)),
+                          "/", length(file_name)),
            Ratio = round(rowSums(!is.na(select(., contains("Area"))))/
-                           length(samples) * 100, digits = 1)
+                           length(file_name) * 100, digits = 1)
     ) %>%
     select(-contains("#"),
            contains(c("Area", "Height")),
@@ -227,16 +293,16 @@ read_canvas <- function(path,
     sim_data <-
       sim_data %>%
       select(-contains('#'), contains('Area')) %>%
-      rename_with(~sub('Area_#', '', .))
+      rename_with(~sub('Area_#', 'Area_', .))
   }
   if(keep == 'height') {
     sim_data <-
       sim_data %>%
       select(-contains('#'), contains('Height')) %>%
-      rename_with(~sub('Height_#', '', .))
+      rename_with(~sub('Height_#', 'Height_', .))
   }
 
   return(sim_data)
-  }
+}
 
 

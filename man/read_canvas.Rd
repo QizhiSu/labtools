@@ -6,8 +6,10 @@
 \usage{
 read_canvas(
   path,
-  ri_align_tolerance = 50,
-  rt_2d_tolerance = 0.05,
+  ri_iden_tol = 30,
+  ri_p_iden_tol = 100,
+  ri_align_tol = 50,
+  rt_2d_align_tol = 0.1,
   keep = "area"
 )
 }
@@ -15,9 +17,15 @@ read_canvas(
 \item{path}{Path of the folder contains .*txt files originally exported from
 Canvas}
 
-\item{ri_align_tolerance}{RI tolerance acceptable for alignment}
+\item{ri_iden_tol}{RI tolerance acceptable for identification when experimental
+reference RI is available, normally 30}
 
-\item{rt_2d_tolerance}{2nd dimension RT acceptable for alignment}
+\item{ri_p_iden_tol}{RI tolerance acceptable for identification when experimental
+reference RI is not available, and predicted one is used, normally 100}
+
+\item{ri_align_tol}{RI tolerance acceptable for alignment}
+
+\item{rt_2d_align_tol}{2nd dimension RT acceptable for alignment}
 
 \item{keep}{whether 'area', 'height', or 'both', telling which information to
 be kept. If keep = 'area', then only peak areas of the compounds in detected
