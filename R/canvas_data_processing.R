@@ -51,8 +51,8 @@ read_canvas <- function(path,
   ## A function to read and organize single canvas data
   read_single <- function(file) {
     # read in reference RI and predicted RI
-    reference_ri <- readRDS("inst/reference_ri.RDS")
-    predict_ri <- readRDS("inst/predict_ri.RDS")
+    reference_ri <- readRDS(system.file("reference_ri.RDS", package = "labtools"))
+    predict_ri <- readRDS(system.file("predict_ri.RDS", package = "labtools"))
 
     data <- read.table(
       file,
@@ -273,6 +273,7 @@ read_canvas <- function(path,
              rowMeans(., na.rm = TRUE) %>%
              round(0),
            NIST_RI = coalesce(!!!select(., contains("NIST_RI"))),
+           Predicted_RI = coalesce(!!!select(., contains("P_RI"))),
            Match = coalesce(!!!select(., contains("Match"))),
            R_match = coalesce(!!!select(., contains("R_match"))),
            CAS = coalesce(!!!select(., contains("CAS"))),
