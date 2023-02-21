@@ -7,10 +7,15 @@
 <!-- badges: end -->
 
 The goal of labtools is to to provide a set of tools to help facilitate
-the handling of laboratory data. At the moment, there is only one
-function to help read and align compound lists of different samples. It
-is still under active development. In the future, more functions will be
-incorporated based on the need of our lab.
+the handling of laboratory data. At the moment, there are only two
+functions. one is to to help read and align compound lists of different
+samples, and the other one is to convert any list of chemicals into
+structure database used by MS-FINDER. It is still under active
+development. In the future, more functions will be incorporated based on
+the need. At the moment, there is only one function to help read and
+align compound lists of different samples. It is still under active
+development. In the future, more functions will be incorporated based on
+the need of our lab.
 
 ## Installation
 
@@ -32,7 +37,7 @@ single table by matching the chemical name. It will evaluate the
 retention index and second dimensional retention time of a same compound
 across them samples. If the differences are bigger than the defined
 tolerance, it will tell you which samples have significantly different
-RI or 2D RT, such that you can carefully check where the inconsistences
+RI or 2D RT, such that you can carefully check where the inconsistencies
 locate.
 
 ``` r
@@ -46,4 +51,25 @@ data <- read_canvas(data_path,
 
 # to understand each argument, you can use the following code
 ?read_canvas
+```
+
+## Convert list of chemicals into structure database used by MS-FINDER
+
+To convert a list of chemicals into structure database, we need to put
+the list of chemicals in either a txt, csv, xlsx, or xls file. Chemical
+name must be in the first column, and specify its path. If CAS is
+available, please specify in which column the CAS number locates. We
+encourage to have CAS number as it will be beneficial for extraction
+chemical information from Pubchem. Finally, we have to specify the path
+to store the structure database.
+
+``` r
+library(labtools)
+
+export4msfinder("c:/data/list_of_chemicals.xlsx",
+                cas_col = 2,
+                "c:/data/structure_database_for_msfinder.txt")
+
+# to understand each argument, you can use the following code
+?export4toxtree
 ```

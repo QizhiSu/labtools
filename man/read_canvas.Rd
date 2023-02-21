@@ -39,11 +39,9 @@ well as peak are/height in each sample.
 }
 \description{
 \code{read_canvas} Facilitate the alignment of canvas data by directly
-reading .*txt files export from Canvas.
-}
-\details{
-Canvas is currently only capable of processing data one by one, which is error-prone
-and tedious to align and combine data from different samples. This function
+reading .*txt files export from Canvas. Canvas is currently only capable of
+processing data one by one, which is error-prone and tedious to align and
+combine data from different samples. This function
 aims to facilitate this process and help us find conflicting identification
 among different samples. The first step is to manually identify and mark peaks
 of interest in Canvas. Then, exported the marked peaks as .txt from all samples
