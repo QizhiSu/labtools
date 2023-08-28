@@ -23,6 +23,11 @@ utils::globalVariables(
     "ExactMass",
     "MolecularFormula",
     "IsomericSMILES",
-    "Database_ID"
+    "Database_ID",
+    "str_remove",
+    "value",
+    "extract_cla",
+    "SMILES",
+    "Formula"
   )
 )
