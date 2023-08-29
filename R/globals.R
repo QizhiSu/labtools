@@ -28,6 +28,8 @@ utils::globalVariables(
     "value",
     "extract_cla",
     "SMILES",
-    "Formula"
+    "Formula",
+    "Adduct",
+    "MZ"
   )
 )

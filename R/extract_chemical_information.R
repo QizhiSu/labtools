@@ -72,7 +72,7 @@ extract_cid <- function(data,
                   inchikey_col, ').')
     # for loop extraction
     for(i in 1:nrow(data)) {
-      if(verbose)  message(i)
+      if(verbose)  message(i, ' of ', nrow(data))
       if(is.na(data$CID[i])) {
         data$CID[i] <-  tryCatch(
           expr = {
@@ -97,7 +97,7 @@ extract_cid <- function(data,
                               cas_col, ').')
     # for loop extraction
     for(i in 1:nrow(data)) {
-      if(verbose)  message(i)
+      if(verbose)  message(i, ' of ', nrow(data))
       if(is.na(data$CID[i])) {
         data$CID[i] <-  tryCatch(
           expr = {
@@ -121,7 +121,7 @@ extract_cid <- function(data,
                               name_col, ').')
     # for loop extraction
     for(i in 1:nrow(data)) {
-      if(verbose)  message(i)
+      if(verbose)  message(i, ' of ', nrow(data))
       if(is.na(data$CID[i])) {
         data$CID[i] <-  tryCatch(
           expr = {
@@ -151,6 +151,7 @@ extract_cid <- function(data,
   return(data)
 }
 
+#-------------------------------------------------------------------------------
 #' Extract meta data from Pubchem
 #'
 #' \code{extract_meta()} is a wrapper of the the \code{pc_prop()} function from
@@ -237,7 +238,7 @@ extract_meta <- function(data, cas = FALSE, flavornet = FALSE) {
   return(data)
 }
 
-
+#-------------------------------------------------------------------------------
 #' Extract classyfire information
 #'
 #' @param data Data includes at least InChIKey which is used for retrieval
@@ -273,7 +274,7 @@ extract_classyfire <- function(data) {
     return(data)
 }
 
-
+#-------------------------------------------------------------------------------
 #' Assign meta data (at the moment only SMILES) to the data
 #'
 #' If you have some compounds that are not present in the Pubchem, there

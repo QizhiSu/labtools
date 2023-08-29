@@ -15,13 +15,14 @@ exported from Canvas. It is still under active development. In the
 future, more functions will be incorporated based on the need of our
 lab.
 
-## Release notes (2023.08.28 Version 0.0.3.0000)
+## Release notes
 
-1.  Deposite functions to extract chemical metadata from Pubchem
-    previouly incorporated in the fcmsafety package
-    [GitHub](https://github.com/QizhiSu/fcmsafety) and update them
-    accordingly. Further updates will be done in this package while
-    those in the fcmsafety package will remain still.
+1.  2023.08.28 Version 0.0.3.0000: Deposite functions to extract
+    chemical metadata from Pubchem previouly incorporated in the
+    fcmsafety package [GitHub](https://github.com/QizhiSu/fcmsafety) and
+    update them accordingly. Further updates will be done in this
+    package while those in thefcmsafety package will remain still.
+2.  2023.08.29 Version 0.0.4.0000: Add export4msdial function.
 
 ## Installation
 
@@ -30,7 +31,102 @@ You can install the development version of labtools from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("QizhiSu/labtools")
+  devtools::install_github("QizhiSu/labtools")
+```
+
+## Extract chemical information from Pubchem
+
+### Read in your data
+
+If you do not have the “rio” and “dplyr” package installed, please
+install it first. If you do, just skip this step.
+
+``` r
+install.packages("rio")
+install.packages("dplyr")
+```
+
+### Load required packages
+
+``` r
+library(fcmsafety)
+library(dplyr)
+```
+
+Please name your file in English but not Chinese (Chinese letters are
+not well supported in some functions). There should be at least one
+column in your data containing either chemical names in English, CAS
+number, or InChIKey. The program will use any or all of these columns to
+retrieve meta data from Pubchem. A good chemical name is always
+favorable.
+
+``` r
+# Please enter the path of your data, e.g., "D:/my data/mydata.xlsx".
+data <- rio::import("D:/my data/mydata.xlsx")
+```
+
+### Extract cid and meta data
+
+Please specify which column contains CAS number by the “cas_col”
+argument, InChIKey by “inchikey_col”, and chemical name by the
+“name_col” argument. You can also specify all these arguments. In this
+case, it will first use InChIKey, and then CAS and Name. To get
+flavornet information, cas = TRUE is required. Depends on the size of
+your data, it might take long time.
+
+``` r
+# No CAS
+data <- data %>% extract_cid(name_col = 1) %>% extract_meta()
+# With CAS
+data <- data %>% extract_cid(name_col = 1) %>% extract_meta(cas = TRUE)
+# With flavornet
+data <- data %>% extract_cid(name_col = 1) %>% extract_meta(cas = TRUE, flavonet = TRUE)
+```
+
+### Assign meta data for chemicals outside Pubchem
+
+If you have some compounds that are not present in Pubchem, for example
+many oligomers found in food contact materials. there will be no SMILES
+retrieved for these compounds using `extract_meta`. In this case, you
+can use `assign_meta` function. However, a *.txt file containing Name
+and SMILES of these compounds is required. There are two options to
+prepare this text file. One is to prepare it manually, the column names
+must be Name and SMILES, respectively (case-insensitive). Another one is
+to prepare *.MOL files (case-insensitive) of these molecules and extract
+SMILES using `combine_mol2sdf()` and `extract_structure()` functions
+from the `mspcompiler` package
+[mspcompiler](https://github.com/QizhiSu/mspcompiler). Note that the
+name in your *.txt file or *.MOL files have to be consistent with the
+one you have in your data as Name is used for matching. Assuming you
+have all your \*MOL files in the “D:/my data” folder, then you can
+follow these steps:
+
+``` r
+# If you have not install the mspcompiler package, please install it following
+# the instruction in its Github homepage https://github.com/QizhiSu/mspcompiler.
+# Once you have it installed
+library(mspcompiler)
+
+# This function combines all *.MOL files in yhe providing folder into a single 
+# *.sdf file from which will be used to extract SMILES. 
+combine_mol2sdf(input = "D:/my data", 
+                output = "D:/my data/mydata.sdf",
+                use_filename = TRUE)
+# The input here is the output from the last command and it will generate a *.txt 
+# file containing Name and SMILES.  
+extract_structure(input = "D:/my data/mydata.sdf",
+                  output = "D:/my data/mydata.txt")
+data <- data %>% assign_meta(meta_file = "D:/my data/mydata.txt")
+```
+
+### Extract classyfire information
+
+After extracting meta data from Pubchem by extract_meta(), which means
+the data will has a column named InChIkey, then we can get the chemical
+structure classification done by classyfire.
+
+``` r
+data <- data %>% extract_classyfire()
 ```
 
 ## Read and combine Canvas data
@@ -59,23 +155,34 @@ data <- read_canvas(data_path,
 ?read_canvas
 ```
 
-## Convert list of chemicals into structure database used by MS-FINDER
+## Convert database for MS-FINDER
 
-To convert a list of chemicals into structure database, we need to put
-the list of chemicals in either a txt, csv, xlsx, or xls file. Chemical
-name must be in the first column, and specify its path. If CAS is
-available, please specify in which column the CAS number locates. We
-encourage to have CAS number as it will be beneficial for extraction
-chemical information from Pubchem. Finally, we have to specify the path
-to store the structure database.
+To export database for MS-FINDER, we first need to extract metadata
+using `extract_cid` and `extract_meta` and then write it out into a .txt
+file.
 
 ``` r
 library(labtools)
 
-export4msfinder("c:/data/list_of_chemicals.xlsx",
-                cas_col = 2,
-                "c:/data/structure_database_for_msfinder.txt")
+export4msfinder(data, "c:/data/structure_database_for_msfinder.txt")
 
 # to understand each argument, you can use the following code
-?export4toxtree
+?export4msfinder
+```
+
+## Convert database for MS-DIAL
+
+To export database for MS-DIAL, we first need to extract metadata using
+`extract_cid` and `extract_meta` and then write it out into a .txt file.
+The function will then add most commonly used adducts based on the
+polarity provided, and calculate the exactmass for each adducts. This
+file can be used for post-identification in MS-DIAL.
+
+``` r
+library(labtools)
+
+export4msdial(data, polarity = "pos", "c:/data/structure_database_for_msfinder.txt")
+
+# to understand each argument, you can use the following code
+?export4msdial
 ```
