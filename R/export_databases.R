@@ -67,7 +67,6 @@ export4msfinder <- function(data,
 #' @import dplyr
 #' @importFrom utils write.table
 #'
-#' @examples
 export4msdial <- function(data,
                           polarity = 'pos',
                           output = 'database for msdial.txt') {

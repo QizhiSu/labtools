@@ -23,6 +23,7 @@ lab.
     update them accordingly. Further updates will be done in this
     package while those in thefcmsafety package will remain still.
 2.  2023.08.29 Version 0.0.4.0000: Add export4msdial function.
+3.  2023.08.30 Version 0.0.5.0000: Add navigate_chem function.
 
 ## Installation
 
@@ -185,4 +186,12 @@ export4msdial(data, polarity = "pos", "c:/data/structure_database_for_msfinder.t
 
 # to understand each argument, you can use the following code
 ?export4msdial
+```
+
+## Navigat through a chemical table and to view chemical structure in a shinyApp
+
+``` r
+library(labtools)
+# Your data must contain at least the SMILES column
+navigate_chem(data)
 ```

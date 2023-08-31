@@ -30,6 +30,11 @@ utils::globalVariables(
     "SMILES",
     "Formula",
     "Adduct",
-    "MZ"
+    "MZ",
+    "parse.smiles",
+    "par",
+    "plot.new",
+    "text",
+    "rasterImage"
   )
 )

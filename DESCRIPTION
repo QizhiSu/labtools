@@ -1,6 +1,6 @@
 Package: labtools
 Title: Tools to Ease Handling of Data common in Analytical Chemistry Laboratories
-Version: 0.0.4.0000
+Version: 0.0.5.0000
 Authors@R: 
     person("Qizhi", "Su", , "sukissqz@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "https://orcid.org/0000-0002-8124-997X"))
@@ -17,9 +17,12 @@ Depends: R (>= 3.5.0)
 Imports: 
     classyfireR,
     dplyr,
+    DT,
     glue,
     purrr,
     R.utils,
     rio,
+    shiny,
     utils,
-    webchem
+    webchem,
+    rcdk
