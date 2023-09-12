@@ -25,4 +25,6 @@ Imports:
     shiny,
     utils,
     webchem,
+    
+Suggests: 
     rcdk

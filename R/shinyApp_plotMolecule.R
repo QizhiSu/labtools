@@ -54,6 +54,11 @@ plot_molecule <- function(molecule, name = NULL, sma = NULL, ...){
 navigate_chem <- function(data) {
   # if (! requireNamespace("rcdk", quietly = TRUE))
   #   stop("Please install rcdk package before using this function")
+  if (!requireNamespace("rcdk", quietly = TRUE)) {
+    warning("The 'rcdk' package is not installed. ",
+            "Some functionality may be limited. ",
+            "You can install it using: install.packages('rcdk')")
+  }
 
   js_select_dt <- c(
     "var dt = table.table().node();",
