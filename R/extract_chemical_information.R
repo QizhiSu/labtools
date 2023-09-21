@@ -259,7 +259,7 @@ extract_classyfire <- function(data) {
     classyfire_meta <- classyfire %>%
       purrr::map(classyfireR::meta)%>%
       sapply("[[", 1) %>%
-      str_remove("InChIKey=") %>%
+      gsub("InChIKey=", "", .)%>%
       as_tibble() %>%
       rename(InChIKey = value)
 
