@@ -49,11 +49,10 @@ plot_molecule <- function(molecule, name = NULL, sma = NULL, ...){
 #'
 #' @import DT
 #' @rawNamespace import(shiny, except = c("dataTableOutput", "renderDataTable"))
+#' @rawNamespace import(shinyjs, except = c("show", "runExample"))
 #' @rawNamespace import(rcdk, except = "matches")
 
 navigate_chem <- function(data) {
-  # if (! requireNamespace("rcdk", quietly = TRUE))
-  #   stop("Please install rcdk package before using this function")
   if (!requireNamespace("rcdk", quietly = TRUE)) {
     warning("The 'rcdk' package is not installed. ",
             "Some functionality may be limited. ",
@@ -70,25 +69,25 @@ navigate_chem <- function(data) {
     "    table.rows().deselect(); ",
     "    table.row(cell[0][0].row).select();",
     "    row = table.rows({selected: true})",
-    # Note: this ID is zero-based so add one
     "    Shiny.setInputValue(inputName, [parseInt(row[0]) + 1]);",
     "  }",
     "});"
   )
 
   ui <- fluidPage(
-    tags$head(tags$style(HTML("
-                              #structurePlot {
-                              resize: both;
-                              overflow: auto;
-                              position: absolute;
-                              left: 0;
-                              top: 0;
-                              # right: 0;
-                              width: 300px;
-                              height: 300px;
-                              }
-                              "))),
+    shinyjs::useShinyjs(),  # Initialize shinyjs
+    tags$head(
+      tags$style(HTML("
+        #structurePlot {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+        }
+      ")),
+      tags$script(src = "https://code.jquery.com/ui/1.12.1/jquery-ui.js")
+    ),
     textOutput("selectedRow"),
     fluidRow(
       column(width = 8,
@@ -97,16 +96,21 @@ navigate_chem <- function(data) {
       column(width = 4,
              div(id = "structureContainer",
                  style = "display: flex; justify-content: flex-end;",
-                 plotOutput("structurePlot",
-                            width = "100%",
-                            height = "400px"))
-      )
+                 plotOutput("structurePlot", width = "100%", height = "400px")))
     )
   )
 
   server <- function(input, output) {
 
     output$chemicalTable <- renderDT({
+      # Find the column index of the SMILES column
+      smiles_col_index <- grep("SMILES", colnames(data), ignore.case = TRUE)
+
+      # Hide the SMILES column if found
+      if (length(smiles_col_index) > 0) {
+        data[, smiles_col_index] <- ""
+      }
+
       datatable(
         data,
         selection = "single",
@@ -115,7 +119,8 @@ navigate_chem <- function(data) {
         editable = TRUE,
         options = list(
           keys = TRUE,
-          select = TRUE
+          select = TRUE,
+          columnDefs = list(list(visible = FALSE, targets = smiles_col_index))
         )
       )
     }, server = FALSE)
@@ -151,6 +156,12 @@ navigate_chem <- function(data) {
     })
 
     output$selectedRow <- renderText(input$chemicalTable_rows_selected)
+
+    # Make the structurePlot resizable and draggable
+    shinyjs::runjs('
+      $("#structurePlot").resizable();
+      $("#structurePlot").draggable();
+    ')
   }
 
   shinyApp(ui, server)

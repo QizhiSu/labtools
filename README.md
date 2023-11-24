@@ -25,6 +25,7 @@ lab.
 2.  2023.08.29 Version 0.0.4.0000: Add export4msdial function.
 3.  2023.08.30 Version 0.0.5.0000: Add navigate_chem function.
 4.  2023.09.21 Version 0.0.5.0002: Fix extract_classifier bug.
+5.  2023.11.24 Version 0.0.5.0003: Improve navigate_chem function.
 
 ## Installation
 
