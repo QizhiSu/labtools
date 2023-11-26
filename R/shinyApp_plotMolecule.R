@@ -120,7 +120,8 @@ navigate_chem <- function(data) {
         options = list(
           keys = TRUE,
           select = TRUE,
-          columnDefs = list(list(visible = FALSE, targets = smiles_col_index))
+          columnDefs = list(list(visible = FALSE, targets = smiles_col_index),
+                            list(orderable = TRUE, targets = 0))
         )
       )
     }, server = FALSE)
