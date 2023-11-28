@@ -26,6 +26,8 @@ lab.
 3.  2023.08.30 Version 0.0.5.0000: Add navigate_chem function.
 4.  2023.09.21 Version 0.0.5.0002: Fix extract_classifier bug.
 5.  2023.11.24 Version 0.0.5.0003: Improve navigate_chem function.
+6.  2023.11.28 Version 0.0.6.0000: Add function to process gcms data
+    from MS-DIAL
 
 ## Installation
 

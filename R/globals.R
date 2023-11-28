@@ -35,6 +35,16 @@ utils::globalVariables(
     "par",
     "plot.new",
     "text",
-    "rasterImage"
+    "rasterImage",
+    "Average_Rt_min",
+    "Average_RI",
+    "Reference_RI",
+    "Quant_mass",
+    "Metabolite_name",
+    "Total_score",
+    "rowid",
+    "Comment",
+    "Detection_frequency",
+    "Detection_rate"
   )
 )
