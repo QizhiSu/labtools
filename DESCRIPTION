@@ -1,6 +1,6 @@
 Package: labtools
 Title: Tools to Ease Handling of Data common in Analytical Chemistry Laboratories
-Version: 0.0.7
+Version: 0.0.7.0001
 Date: 2024-03-12
 Authors@R: 
     person("Qizhi", "Su", , "sukissqz@gmail.com", role = c("aut", "cre"),

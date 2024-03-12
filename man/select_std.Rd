@@ -10,7 +10,7 @@ select_std(
   std_md1_col,
   data_md,
   data_md1_col,
-  top_k_md = 20
+  top_npct_md = 20
 )
 }
 \arguments{
@@ -32,8 +32,8 @@ be at the end of the dataframe}
 \item{data_md1_col}{The column index where the molecular descriptor data
 starts in data_md}
 
-\item{top_k_md}{The number of top molecular descriptors to select (default
-is 20)}
+\item{top_npct_md}{The percentage of top molecular descriptors to select
+(default is 20)}
 }
 \value{
 A metadata dataframe with the selected standard assigned to each
