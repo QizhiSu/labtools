@@ -27,7 +27,9 @@ lab.
 4.  2023.09.21 Version 0.0.5.0002: Fix extract_classifier bug.
 5.  2023.11.24 Version 0.0.5.0003: Improve navigate_chem function.
 6.  2023.11.28 Version 0.0.6.0000: Add function to process gcms data
-    from MS-DIAL
+    from MS-DIAL.
+7.  2024.03.12 Version 0.0.7.0000: Add function to assign
+    semi-quantification standards for target compounds.
 
 ## Installation
 
@@ -198,4 +200,14 @@ export4msdial(data, polarity = "pos", "c:/data/structure_database_for_msfinder.t
 library(labtools)
 # Your data must contain at least the SMILES column
 navigate_chem(data)
+```
+
+## Assign semi-quantification standards for target compounds
+
+``` r
+library(labtools)
+
+std_md <- read.csv("standards_data.csv")
+data_md <- read.csv("substances_data.csv")
+result <- select_std(std_md, 1, 2, data_md, 2, 10)
 ```

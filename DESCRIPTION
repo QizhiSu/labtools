@@ -1,6 +1,7 @@
 Package: labtools
 Title: Tools to Ease Handling of Data common in Analytical Chemistry Laboratories
-Version: 0.0.6.0000
+Version: 0.0.7
+Date: 2024-03-12
 Authors@R: 
     person("Qizhi", "Su", , "sukissqz@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "https://orcid.org/0000-0002-8124-997X"))
@@ -28,4 +29,6 @@ Imports:
     rcdk,
     shinyjs,
     janitor,
-    tibble
+    tibble,
+    proxy,
+    randomForest
