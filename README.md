@@ -30,6 +30,7 @@ lab.
     from MS-DIAL.
 7.  2024.03.12 Version 0.0.7.0000: Add function to assign
     semi-quantification standards for target compounds.
+8.  2024.04.21 Version 0.0.8: Add function to filter msp file.
 
 ## Installation
 
@@ -210,4 +211,25 @@ library(labtools)
 std_md <- read.csv("standards_data.csv")
 data_md <- read.csv("substances_data.csv")
 result <- select_std(std_md, 1, 2, data_md, 2, 10)
+```
+
+## Filter msp file
+
+``` r
+# to beging with, please install the mspcompiler package first
+remotes::install_github("QizhiSu/mspcompiler")
+
+library(labtools)
+
+# The input file should be in msp format
+# given you have a list of compounds to be filtered, 
+# you can use the following code to filter the msp file.
+my_data <- rio::import("my_data.xlsx")
+my_data <- my_data %>% extract_cid(name_col = 1, cas_col = 2) %>% extract_meta(cas = TRUE)
+
+# and you have the NIST library
+nist <- "C:/data/NIST.msp"
+
+# then you can use the following code to filter the msp file
+filter_msp(msp = nist, inchikey = my_data$InChIKey, output = "filtered_nist.msp")
 ```

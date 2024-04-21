@@ -42,98 +42,122 @@ extract_cid <- function(data,
                         inchikey_col = FALSE,
                         verbose = TRUE) {
   # if no column is specified, then stop
-  if(name_col == FALSE & cas_col == FALSE & inchikey_col == FALSE)
-    stop('Please specify in which column the Chemical name, CAS, or ',
-               'InChIKey is stored for the extraction purpose.\n',
-               'Type ?extract_cid for more information.')
+  if (name_col == FALSE && cas_col == FALSE && inchikey_col == FALSE) {
+    stop(
+      "Please specify in which column the Chemical name, CAS, or ",
+      "InChIKey is stored for the extraction purpose.\n",
+      "Type ?extract_cid for more information."
+    )
+  }
 
   # if there is no CID in the data, create one,
   # if yes, ask to continue or not
-  if(!"CID" %in% colnames(data)) {
+  if (!"CID" %in% colnames(data)) {
     # must be character
     data$CID <- NA_character_
-  }else{
-    user_input <- readline(paste('Your data already has a CID column.',
-                                 'Please check if it is CID from Pubchem.',
-                                 'Do you want to continue? (yes/no): '))
-    if(user_input == "yes") {
-      message('Your existing CID will be overwritten.')
+  } else {
+    user_input <- readline(paste(
+      "Your data already has a CID column.",
+      "Please check if it is CID from Pubchem.",
+      "Do you want to continue? (yes/no): "
+    ))
+    if (user_input == "yes") {
+      message("Your existing CID will be overwritten.")
       # must be character
       data$CID <- NA_character_
-    }else{
+    } else {
       stop("Your data alreadly has CID.")
     }
   }
 
   # Extract CID based on InChIKey
-  if(inchikey_col != FALSE) {
+  if (inchikey_col != FALSE) {
     # message
-    if(verbose) message('Extracting CID based on the InChIKey provided (column ',
-                  inchikey_col, ').')
+    if (verbose) {
+      message(
+        "Extracting CID based on the InChIKey provided (column ",
+        inchikey_col, ")."
+      )
+    }
     # for loop extraction
-    for(i in 1:nrow(data)) {
-      if(verbose)  message(i, ' of ', nrow(data))
-      if(is.na(data$CID[i])) {
-        data$CID[i] <-  tryCatch(
+    for (i in seq_len(nrow(data))) {
+      if (verbose) message(i, " of ", nrow(data))
+      if (is.na(data$CID[i])) {
+        data$CID[i] <- tryCatch(
           expr = {
-            R.utils::withTimeout(webchem::get_cid(data[i, inchikey_col],
-                                         match = "first", from = "inchikey")$cid,
-                                 timeout = 5)
+            R.utils::withTimeout(
+              webchem::get_cid(data[i, inchikey_col],
+                match = "first", from = "inchikey"
+              )$cid,
+              timeout = 5
+            )
           },
           TimeoutException = function(e) NA_character_
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
-      }else{
-        if(verbose) message('Compound ', i, ' already has CID.')
+      } else {
+        if (verbose) message("Compound ", i, " already has CID.")
       }
     }
   }
 
 
   # Extract CID based on CAS
-  if(cas_col != FALSE) {
+  if (cas_col != FALSE) {
     # message
-    if(verbose) message('Extracting CID based on the CAS provided (column ',
-                              cas_col, ').')
+    if (verbose) {
+      message(
+        "Extracting CID based on the CAS provided (column ",
+        cas_col, ")."
+      )
+    }
     # for loop extraction
-    for(i in 1:nrow(data)) {
-      if(verbose)  message(i, ' of ', nrow(data))
-      if(is.na(data$CID[i])) {
-        data$CID[i] <-  tryCatch(
+    for (i in seq_len(nrow(data))) {
+      if (verbose) message(i, " of ", nrow(data))
+      if (is.na(data$CID[i])) {
+        data$CID[i] <- tryCatch(
           expr = {
             R.utils::withTimeout(webchem::get_cid(data[i, cas_col], match = "first")$cid,
-                                 timeout = 5)
+              timeout = 5
+            )
           },
           TimeoutException = function(e) NA_character_
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
-      }else{
-        if(verbose) message('Compound ', i, ' already has CID.')
+      } else {
+        if (verbose) message("Compound ", i, " already has CID.")
       }
     }
   }
 
 
   # Extract CID based on Name
-  if(name_col != FALSE) {
+  if (name_col != FALSE) {
     # message
-    if(verbose) message('Extracting CID based on the Chemical Name provided (column ',
-                              name_col, ').')
+    if (verbose) {
+      message(
+        "Extracting CID based on the Chemical Name provided (column ",
+        name_col, ")."
+      )
+    }
     # for loop extraction
-    for(i in 1:nrow(data)) {
-      if(verbose)  message(i, ' of ', nrow(data))
-      if(is.na(data$CID[i])) {
-        data$CID[i] <-  tryCatch(
+    for (i in seq_len(nrow(data))) {
+      if (verbose) message(i, " of ", nrow(data))
+      if (is.na(data$CID[i])) {
+        data$CID[i] <- tryCatch(
           expr = {
-            R.utils::withTimeout(webchem::get_cid(data[i, name_col],
-                                                  match = "first", from = "name")$cid,
-                                 timeout = 5)
+            R.utils::withTimeout(
+              webchem::get_cid(data[i, name_col],
+                match = "first", from = "name"
+              )$cid,
+              timeout = 5
+            )
           },
           TimeoutException = function(e) NA_character_
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
-      }else{
-        if(verbose) message('Compound ', i, ' already has CID.')
+      } else {
+        if (verbose) message("Compound ", i, " already has CID.")
       }
     }
   }
@@ -144,9 +168,11 @@ extract_cid <- function(data,
   n_no_cid <- sum(is.na(data$CID))
   n_with_cid <- sum(!is.na(data$CID))
 
-  message('Extraction done!!')
-  message('There are ', nrow(data), ' compounds in total, with ', n_with_cid,
-          ' compounds has CID while ', n_no_cid, ' compounds has no CID.')
+  message("Extraction done!!")
+  message(
+    "There are ", nrow(data), " compounds in total, with ", n_with_cid,
+    " compounds has CID while ", n_no_cid, " compounds has no CID."
+  )
 
   return(data)
 }
@@ -184,54 +210,66 @@ extract_cid <- function(data,
 #' x <- data.frame(CAS = "128-37-0", Name = "BHT")
 #' x_cid <- extract_cid(x, cas_col = 1, name_col = 2) %>% extract_meta()
 extract_meta <- function(data, cas = FALSE, flavornet = FALSE) {
-  message('Extracting metadata from Pubchem based on CID.')
+  message("Extracting metadata from Pubchem based on CID.")
   data$CID <- as.integer(data$CID)
 
   # to avoid duplicate InChIKey when merging the extracted data
-  if("InChIKey" %in% colnames(data))
+  if ("InChIKey" %in% colnames(data)) {
     data <- data %>% rename(InChIKey_old = InChIKey)
-  if("SMILES" %in% colnames(data))
+  }
+  if ("SMILES" %in% colnames(data)) {
     data <- data %>% rename(SMILES_old = SMILES)
-  if("Formula" %in% colnames(data))
+  }
+  if ("Formula" %in% colnames(data)) {
     data <- data %>% rename(Formula_old = Formula)
-  if("ExactMass" %in% colnames(data))
+  }
+  if ("ExactMass" %in% colnames(data)) {
     data <- data %>% rename(ExactMass_old = ExactMass)
+  }
 
   data <- data %>%
     filter(!is.na(CID)) %>%
     distinct(CID) %>%
-    pc_prop(properties =
-              c("IsomericSMILES",
-                "InChIKey",
-                "ExactMass",
-                "MolecularFormula",
-                "IUPACName")) %>%
+    pc_prop(
+      properties =
+        c(
+          "IsomericSMILES",
+          "InChIKey",
+          "ExactMass",
+          "MolecularFormula",
+          "IUPACName"
+        )
+    ) %>%
     left_join(data, ., by = "CID") %>%
-    rename(SMILES = IsomericSMILES,
-           Formula = MolecularFormula)
+    rename(
+      SMILES = IsomericSMILES,
+      Formula = MolecularFormula
+    )
 
   # retrieve CAS
-  if(cas == TRUE) {
-    message('Extracting CAS from Pubchem.')
-    for(i in 1:nrow(data)){
+  if (cas == TRUE) {
+    message("Extracting CAS from Pubchem.")
+    for (i in seq_len(nrow(data))) {
       message(i)
       # keep only the first one.
       tmp <- webchem::pc_sect(data$CID[i], "cas")$Result[1] %>%
         suppressWarnings()
-      if(length(tmp) != 0){data$CAS_retrieved[i] <- tmp}
+      if (length(tmp) != 0) {
+        data$CAS_retrieved[i] <- tmp
+      }
 
       tmp <- NA
     }
   }
 
   # retrieve flavonet
-  if(flavornet == TRUE) {
-    message('Extracting flavor from Flavonet.')
-    data$Flavornet = NA_character_
-    for(i in 1:nrow(data)) {
+  if (flavornet == TRUE) {
+    message("Extracting flavor from Flavonet.")
+    data$Flavornet <- NA_character_
+    for (i in seq_len(nrow(data))) {
       message(i)
       tmp <- webchem::fn_percept(data$CAS_retrieved[i]) %>% suppressWarnings()
-      if(length(tmp) != 0) data$Flavornet[i] <- tmp
+      if (length(tmp) != 0) data$Flavornet[i] <- tmp
     }
   }
 
@@ -250,28 +288,34 @@ extract_meta <- function(data, cas = FALSE, flavornet = FALSE) {
 #' @import purrr
 #' @import dplyr
 extract_classyfire <- function(data) {
-    # extract classification from classyfireR
-    classyfire <- data$InChIKey %>%
-      unique() %>% # remove duplicates
-      purrr::map(classyfireR::get_classification) %>%
-      purrr::discard(is.null)
-    # extract meta data for classification
-    classyfire_meta <- classyfire %>%
-      purrr::map(classyfireR::meta)%>%
-      sapply("[[", 1) %>%
-      gsub("InChIKey=", "", .)%>%
-      as_tibble() %>%
-      rename(InChIKey = value)
+  # check if classyfireR is installed
+  if (!requireNamespace("classyfireR", quietly = TRUE)) {
+    stop("classyfireR is not installed. Please install it first.",
+         call. = FALSE)
+  }
 
-    data <-
-      classyfire %>%
-      purrr::map(classyfireR::classification) %>%
-      lapply(extract_cla) %>%
-      do.call("bind_rows", .) %>% # collapse the list into a data.frame
-      cbind(classyfire_meta, .) %>% # join with InChIKey
-      left_join(data, ., by = "InChIKey") # join with the raw table
+  # extract classification from classyfireR
+  classyfire <- data$InChIKey %>%
+    unique() %>% # remove duplicates
+    purrr::map(classyfireR::get_classification) %>%
+    purrr::discard(is.null)
+  # extract meta data for classification
+  classyfire_meta <- classyfire %>%
+    purrr::map(classyfireR::meta) %>%
+    sapply("[[", 1) %>%
+    gsub("InChIKey=", "", .) %>%
+    as_tibble() %>%
+    rename(InChIKey = value)
 
-    return(data)
+  data <-
+    classyfire %>%
+    purrr::map(classyfireR::classification) %>%
+    lapply(extract_cla) %>%
+    do.call("bind_rows", .) %>% # collapse the list into a data.frame
+    cbind(classyfire_meta, .) %>% # join with InChIKey
+    left_join(data, ., by = "InChIKey") # join with the raw table
+
+  return(data)
 }
 
 #-------------------------------------------------------------------------------
@@ -303,11 +347,15 @@ assign_meta <- function(data, meta_file) {
   meta_data <- rio::import(meta_file)
   colnames(data)[grep("name", colnames(data), ignore.case = TRUE)] <- "Name"
   colnames(meta_data)[grep("smiles", colnames(meta_data),
-                           ignore.case = TRUE)] <- "SMILES"
+    ignore.case = TRUE
+  )] <- "SMILES"
   data$SMILES <- ifelse(is.na(data$SMILES),
-                        meta_data$SMILES[match(tolower(trimws(data$Name)),
-                                               tolower(trimws(meta_data$Name)))],
-                        data$SMILES)
+    meta_data$SMILES[match(
+      tolower(trimws(data$Name)),
+      tolower(trimws(meta_data$Name))
+    )],
+    data$SMILES
+  )
 
   return(data)
 }

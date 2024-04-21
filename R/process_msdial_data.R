@@ -12,7 +12,7 @@
 #' @importFrom tibble rowid_to_column
 read_msdial <- function(file,
                         type = "gcms") {
-  if(type == "gcms") {
+  if (type == "gcms") {
     data <- rio::import(file, skip = 3, header = TRUE) %>%
       janitor::row_to_names(1) %>%
       suppressWarnings() %>%
@@ -22,23 +22,27 @@ read_msdial <- function(file,
       select(2:5, 8:9, 11:12, 16, 19, 29:ncol(data)) %>%
       select(-contains(c("BK", "bk", "blank", "Blank", "BLANK"))) %>%
       select(!matches("^X\\d")) %>%
-      rename(RT = `Average_Rt_min`,
-             RI = `Average_RI`,
-             Reference_RI = `Reference_RI`,
-             Quant_mass = `Quant_mass`,
-             Name = `Metabolite_name`,
-             Score = `Total_score`) %>%
+      rename(
+        RT = `Average_Rt_min`,
+        RI = `Average_RI`,
+        Reference_RI = `Reference_RI`,
+        Quant_mass = `Quant_mass`,
+        Name = `Metabolite_name`,
+        Score = `Total_score`
+      ) %>%
       relocate(Reference_RI, .after = RI) %>%
       relocate(Score, .after = Name) %>%
       relocate(Formula, .after = SMILES) %>%
       filter(Name != "Unknown") %>%
-      mutate(RT = as.numeric(RT) %>% round(digits = 2),
-             RI = as.numeric(RI) %>% round(),
-             Score = as.numeric(Score) %>% round(),
-             Delta_RI = (RI - as.numeric(Reference_RI)) %>% round(),
-             Quant_mass = as.numeric(Quant_mass) %>% round(),
-             across(11:ncol(.), as.numeric),
-             across(11:ncol(.), round)) %>%
+      mutate(
+        RT = as.numeric(RT) %>% round(digits = 2),
+        RI = as.numeric(RI) %>% round(),
+        Score = as.numeric(Score) %>% round(),
+        Delta_RI = (RI - as.numeric(Reference_RI)) %>% round(),
+        Quant_mass = as.numeric(Quant_mass) %>% round(),
+        across(11:ncol(.), as.numeric),
+        across(11:ncol(.), round)
+      ) %>%
       relocate(Delta_RI, .after = Reference_RI) %>%
       tibble::rowid_to_column() %>%
       rename(ID = rowid)
@@ -46,7 +50,6 @@ read_msdial <- function(file,
 
   return(data)
 }
-
 
 
 #' Calculate the detection frequency and detection rate
@@ -65,9 +68,10 @@ read_msdial <- function(file,
 #'
 #' @import dplyr
 #'
-calculate_freq <- function(data,
-                          num_sample,
-                          sep = ","){
+calculate_freq <- function(
+    data,
+    num_sample,
+    sep = ",") {
   # Define a function for calculate pct for a single string.
   get_freq <- function(x) {
     # str_split returns a list and has to be unlisted into a vector
@@ -78,10 +82,11 @@ calculate_freq <- function(data,
 
   # Apply to the whole data set.
   data <- data %>%
-    mutate(Detection_frequency = lapply(.$Comment, get_freq) %>% unlist(),
-           Detection_rate = round(Detection_frequency/num_sample*100, 1)) %>%
+    mutate(
+      Detection_frequency = lapply(.$Comment, get_freq) %>% unlist(),
+      Detection_rate = round(Detection_frequency / num_sample * 100, 1)
+    ) %>%
     relocate(Detection_frequency:Detection_rate, .after = Comment)
 
   return(data)
 }
-
