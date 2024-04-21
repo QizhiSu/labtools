@@ -4,14 +4,14 @@
 \alias{filter_msp}
 \title{Filter an EI library by InChIKey}
 \usage{
-filter_msp(msp, inchikey, output)
+filter_msp(msp, cmp_list, keep_napd8 = TRUE, output)
 }
 \arguments{
 \item{msp}{Path to the library file in msp format}
 
-\item{inchikey}{vector of InChIKeys to keep}
-
 \item{output}{path to write the filtered library to}
+
+\item{inchikey}{vector of InChIKeys to keep}
 }
 \description{
 \code{filter_msp} provide a simple way to filter an EI library by InChIKey, which can then be use

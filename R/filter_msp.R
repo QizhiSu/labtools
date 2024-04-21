@@ -4,15 +4,17 @@
 #' as a small *.msp file for MS-DIAL. This can be useful to targetedly find specific compounds in
 #' your data.
 #' @param msp Path to the library file in msp format
-#' @param inchikey vector of InChIKeys to keep
+#' @param cmp_list A data.frame contains at least Name and InChIKey to be kept
+#' @param keep_napd8 If TRUE, add Naphthalene-D8 to the list of compounds to keep
 #' @param output path to write the filtered library to
 #'
 #' @import purrr
+#' @import dplyr
 #' @import mspcompiler
 #'
 #' @export
 #'
-filter_msp <- function(msp, inchikey, output) {
+filter_msp <- function(msp, cmp_list, keep_napd8 = TRUE, output) {
   # check if mspcompiler is installed
   if (!requireNamespace("mspcompiler", quietly = TRUE)) {
     stop("mspcompiler is not installed. Please install it first.",
@@ -23,6 +25,14 @@ filter_msp <- function(msp, inchikey, output) {
   cat("Reading", basename(msp), "...\n")
   lib <- mspcompiler::read_lib(msp, type = "EI")
   cat(basename(msp), "read!\n")
+
+  # define the InChIKeys to keep
+  if (keep_napd8) {
+    cmp_list <- dplyr::bind_rows(
+      cmp_list, data.frame(Name = "Naphthalene-D8", InChIKey = "UFWIBTONFRDIAS-LUPYIRNKSA-N")
+    )
+  }
+  inchikey <- cmp_list$InChIKey
 
   # Define a function to check for the presence of a specific InChIKey
   keep_cmp <- function(element, inchikey) { # nolint
@@ -41,18 +51,25 @@ filter_msp <- function(msp, inchikey, output) {
   filtered_lib <- purrr::keep(lib, ~ keep_cmp(., inchikey))
 
   # determine if all InChIKeys were found
-  filtered_inchikeys <- sapply(filtered_lib, function(x) x$InChIKey)
-  filtered_inchikeys <- unique(filtered_inchikeys)
-  if (all(inchikey %in% filtered_inchikeys)) {
+  filtered_inchikey <- sapply(filtered_lib, function(x) x$InChIKey)
+  filtered_inchikey <- unique(filtered_inchikey)
+  if (all(inchikey %in% filtered_inchikey)) {
     cat("All InChIKeys found!\n")
   } else {
-    missing_inchikeys <- inchikey[!inchikey %in% filtered_inchikeys]
-    which_missing <- which(inchikey %in% missing_inchikeys)
+    missing_inchikey <- inchikey[!inchikey %in% filtered_inchikey]
+    which_missing <- which(inchikey %in% missing_inchikey)
     cat(
       "Warning: The following compounds were not found:\n",
       paste(which_missing, collapse = "\n")
     )
   }
+
+  # change the Name to the one provided in the cmp_list
+  change_name <- function(lib, cmp_list) {
+    lib$Name <- cmp_list$Name[match(lib$InChIKey, cmp_list$InChIKey)]
+    return(lib)
+  }
+  filtered_lib <- lapply(filtered_lib, change_name, cmp_list = cmp_list)
 
   # write the filtered library to file
   mspcompiler::write_EI_msp(filtered_lib, output)

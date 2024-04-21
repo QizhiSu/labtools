@@ -30,7 +30,7 @@ lab.
     from MS-DIAL.
 7.  2024.03.12 Version 0.0.7.0000: Add function to assign
     semi-quantification standards for target compounds.
-8.  2024.04.21 Version 0.0.8: Add function to filter msp file.
+8.  2024.04.21 Version 0.1.01: Add function to filter msp file.
 
 ## Installation
 
