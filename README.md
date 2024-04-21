@@ -231,5 +231,5 @@ my_data <- my_data %>% extract_cid(name_col = 1, cas_col = 2) %>% extract_meta(c
 nist <- "C:/data/NIST.msp"
 
 # then you can use the following code to filter the msp file
-filter_msp(msp = nist, inchikey = my_data$InChIKey, output = "filtered_nist.msp")
+filter_msp(msp = nist, keep_napd8 = TRUE, cmp_list = my_data, output = "filtered_nist.msp")
 ```
