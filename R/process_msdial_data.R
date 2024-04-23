@@ -13,15 +13,25 @@
 read_msdial <- function(file,
                         type = "gcms") {
   if (type == "gcms") {
-    data <- rio::import(file, skip = 3, header = TRUE) %>%
-      janitor::row_to_names(1) %>%
-      suppressWarnings() %>%
-      janitor::clean_names(case = "none")
+    # read in the first 4 rows for compiling colnames
+    tmp <- rio::import(file, nrows = 4, header = TRUE)
+    col_names <- paste(tmp[4, ], tmp[3, ], sep = "_")
+    col_names <- sub("_1$", "", col_names) # ensure remove only the last _1
+    col_names <- sub("_Batch ID", "", col_names)
+    col_names <- sub("_$", "", col_names)
+    col_names <- sub("_Average", "_Mean", col_names)
+    col_names <- sub("_Stdev", "_SD", col_names)
+    col_names <- gsub(" |/|-|\\(|\\.", "_", col_names)
+    col_names <- gsub("\\)|_%", "", col_names)
+    col_names <- sub("__", "_", col_names)
+
+    # read data
+    data <- rio::import(file, skip = 4, header = TRUE)
+    colnames(data) <- col_names # assign colnames
+    data <- janitor::clean_names(data, case = "none")
 
     data <- data %>%
       select(2:5, 8:9, 11:12, 16, 19, 29:ncol(data)) %>%
-      select(-contains(c("BK", "bk", "blank", "Blank", "BLANK"))) %>%
-      select(!matches("^X\\d")) %>%
       rename(
         RT = `Average_Rt_min`,
         RI = `Average_RI`,
