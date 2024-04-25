@@ -23,7 +23,7 @@ filter_msp <- function(msp, cmp_list, keep_napd8 = TRUE, output) {
 
   # read in the library in msp format
   cat("Reading", basename(msp), "...\n")
-  lib <- mspcompiler::read_lib(msp, type = "EI")
+  lib <- mspcompiler::read_lib(msp, type = "EI", remove_ri = FALSE)
   cat(basename(msp), "read!\n")
 
   # define the InChIKeys to keep
