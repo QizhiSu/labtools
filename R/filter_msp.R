@@ -18,7 +18,17 @@ filter_msp <- function(msp, cmp_list, keep_napd8 = TRUE, output) {
   # check if mspcompiler is installed
   if (!requireNamespace("mspcompiler", quietly = TRUE)) {
     stop("mspcompiler is not installed. Please install it first.",
-         call. = FALSE)
+      call. = FALSE
+    )
+  }
+
+  # check if file exists
+  if (!file.exists(msp)) {
+    stop(msp, " file does not exist.", call. = FALSE)
+  }
+
+  if (!file.exists(dirname(output))) {
+    stop(dirname(output), " path does not exist.", call. = FALSE)
   }
 
   # read in the library in msp format
