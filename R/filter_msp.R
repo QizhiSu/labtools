@@ -70,7 +70,7 @@ filter_msp <- function(msp, cmp_list, keep_napd8 = TRUE, output) {
     which_missing <- which(inchikey %in% missing_inchikey)
     cat(
       "Warning: The following compounds were not found:\n",
-      paste(which_missing, collapse = "\n")
+      paste(which_missing, collapse = ", ")
     )
   }
 
@@ -83,5 +83,5 @@ filter_msp <- function(msp, cmp_list, keep_napd8 = TRUE, output) {
 
   # write the filtered library to file
   mspcompiler::write_EI_msp(filtered_lib, output)
-  cat("Filtered library written to", output, "!\n")
+  cat("\n", "Filtered library written to", output, "!\n")
 }
