@@ -3,6 +3,8 @@
 #' @param file The *.txt file exported from MS-DIAL.
 #' @param type Type of the data analyed by MS-DIAL, can be either gcms or lcms.
 #' lcms is not currently implemented.
+#' @param keep_unknown If TRUE, keep unknown compounds.
+#' @param keep_spectrum If TRUE, keep EI_spectrum column.
 #'
 #' @return A cleaned table with most important information reserved.
 #' @export
@@ -11,7 +13,9 @@
 #' @importFrom janitor row_to_names clean_names
 #' @importFrom tibble rowid_to_column
 read_msdial <- function(file,
-                        type = "gcms") {
+                        type = "gcms",
+                        keep_unknown = FALSE,
+                        keep_spectrum = FALSE) {
   if (type == "gcms") {
     # read in the first 4 rows for compiling colnames
     tmp <- rio::import(file, nrows = 4, header = TRUE)
@@ -31,7 +35,7 @@ read_msdial <- function(file,
     data <- janitor::clean_names(data, case = "none")
 
     data <- data %>%
-      select(2:5, 8:9, 11:12, 16, 19, 29:ncol(data)) %>%
+      select(2:5, 8:9, 11:12, 16, 19, 28:ncol(data)) %>%
       rename(
         RT = `Average_Rt_min`,
         RI = `Average_RI`,
@@ -43,20 +47,32 @@ read_msdial <- function(file,
       relocate(Reference_RI, .after = RI) %>%
       relocate(Score, .after = Name) %>%
       relocate(Formula, .after = SMILES) %>%
-      filter(Name != "Unknown") %>%
       mutate(
         RT = as.numeric(RT) %>% round(digits = 2),
         RI = as.numeric(RI) %>% round(),
         Score = as.numeric(Score) %>% round(),
         Delta_RI = (RI - as.numeric(Reference_RI)) %>% round(),
         Quant_mass = as.numeric(Quant_mass) %>% round(),
-        across(11:ncol(.), as.numeric),
-        across(11:ncol(.), round)
+        across(12:ncol(.), as.numeric),
+        across(12:ncol(.), round)
       ) %>%
-      relocate(Delta_RI, .after = Reference_RI) %>%
-      tibble::rowid_to_column() %>%
-      rename(ID = rowid)
+      suppressWarnings() %>%
+      relocate(Delta_RI, .after = Reference_RI)
   }
+
+  # remove unknown
+  if (keep_unknown == FALSE) {
+    data <- filter(data, Name != "Unknown")
+  }
+  # remove EI_spectrum
+  if (keep_spectrum == FALSE) {
+    data <- select(data, -EI_spectrum)
+  }
+
+  # convert rowid to column
+  data <- data %>%
+    tibble::rowid_to_column() %>%
+    rename(ID = rowid)
 
   return(data)
 }

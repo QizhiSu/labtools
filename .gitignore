@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+labtools_manual.qmd
+.vscode
+/.quarto/

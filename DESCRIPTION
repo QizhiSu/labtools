@@ -29,10 +29,12 @@ Imports:
     janitor,
     tibble,
     proxy,
-    randomForest
+    randomForest,
+    mspcompiler,
+    classyfireR,
+    rcdk
 Remotes: 
-  QizhiSu/mspcompiler
-Suggests: 
-  classyfireR,
-  rcdk
+    QizhiSu/mspcompiler,
+    aberHRML/classyfireR
+
 

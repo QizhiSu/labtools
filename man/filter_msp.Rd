@@ -9,9 +9,11 @@ filter_msp(msp, cmp_list, keep_napd8 = TRUE, output)
 \arguments{
 \item{msp}{Path to the library file in msp format}
 
-\item{output}{path to write the filtered library to}
+\item{cmp_list}{A data.frame contains at least Name and InChIKey to be kept}
 
-\item{inchikey}{vector of InChIKeys to keep}
+\item{keep_napd8}{If TRUE, add Naphthalene-D8 to the list of compounds to keep}
+
+\item{output}{path to write the filtered library to}
 }
 \description{
 \code{filter_msp} provide a simple way to filter an EI library by InChIKey, which can then be use

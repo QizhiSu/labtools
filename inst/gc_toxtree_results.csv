@@ -1,0 +1,4 @@
+CAS,Cramer rules,NAME,SMILES,cdk:Title,toxTree.tree.cramer.CramerTreeResult
+8016-20-4,Low (Class I),D-Limonene,CC1=CCC(CC1)C(=C)C,,"1N,2N,3N,5N,6N,7N,16Y"
+1120-21-4,Low (Class I),Undecane,CCCCCCCCCCC,,"1N,2N,3N,5Y"
+124-19-6,Low (Class I),Nonanal,CCCCCCCCC=O,,"1N,2N,3N,5N,6N,7N,16N,17N,19Y,20Y,21N,18N"

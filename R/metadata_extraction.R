@@ -57,14 +57,11 @@ extract_cid <- function(data,
     data$CID <- NA_character_
   } else {
     user_input <- readline(paste(
-      "Your data already has a CID column.",
-      "Please check if it is CID from Pubchem.",
+      "Your data already has a CID column. Please check if it is CID from Pubchem.",
       "Do you want to continue? (yes/no): "
     ))
     if (user_input == "yes") {
-      message("Your existing CID will be overwritten.")
-      # must be character
-      data$CID <- NA_character_
+      message("Existing CID will be kept and only empty CID will be extracted.")
     } else {
       stop("Your data alreadly has CID.")
     }
@@ -89,14 +86,12 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, inchikey_col],
                 match = "first", from = "inchikey"
               )$cid,
-              timeout = 5
+              timeout = 2
             )
           },
           TimeoutException = function(e) NA_character_
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
-      } else {
-        if (verbose) message("Compound ", i, " already has CID.")
       }
     }
   }
@@ -118,14 +113,12 @@ extract_cid <- function(data,
         data$CID[i] <- tryCatch(
           expr = {
             R.utils::withTimeout(webchem::get_cid(data[i, cas_col], match = "first")$cid,
-              timeout = 5
+              timeout = 2
             )
           },
           TimeoutException = function(e) NA_character_
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
-      } else {
-        if (verbose) message("Compound ", i, " already has CID.")
       }
     }
   }
@@ -150,14 +143,12 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, name_col],
                 match = "first", from = "name"
               )$cid,
-              timeout = 5
+              timeout = 2
             )
           },
           TimeoutException = function(e) NA_character_
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
-      } else {
-        if (verbose) message("Compound ", i, " already has CID.")
       }
     }
   }
@@ -168,11 +159,16 @@ extract_cid <- function(data,
   n_no_cid <- sum(is.na(data$CID))
   n_with_cid <- sum(!is.na(data$CID))
 
-  message("Extraction done!!")
+  message("\nExtraction done!!\n")
   message(
     "There are ", nrow(data), " compounds in total, with ", n_with_cid,
     " compounds has CID while ", n_no_cid, " compounds has no CID."
   )
+
+  # repositioning the CID columns
+  if ("Comment" %in% colnames(data)) {
+    data <- relocate(data, CID, .after = Comment)
+  }
 
   return(data)
 }
@@ -210,6 +206,10 @@ extract_cid <- function(data,
 #' x <- data.frame(CAS = "128-37-0", Name = "BHT")
 #' x_cid <- extract_cid(x, cas_col = 1, name_col = 2) %>% extract_meta()
 extract_meta <- function(data, cas = FALSE, flavornet = FALSE) {
+  if (!("CID" %in% colnames(data))) {
+    stop("Your data does not contain CID column. Please run extract_cid() first.")
+  }
+
   message("Extracting metadata from Pubchem based on CID.")
   data$CID <- as.integer(data$CID)
 
@@ -257,9 +257,9 @@ extract_meta <- function(data, cas = FALSE, flavornet = FALSE) {
       if (length(tmp) != 0) {
         data$CAS_retrieved[i] <- tmp
       }
-
       tmp <- NA
     }
+    message("CAS extraction done.")
   }
 
   # retrieve flavonet
@@ -271,7 +271,15 @@ extract_meta <- function(data, cas = FALSE, flavornet = FALSE) {
       tmp <- webchem::fn_percept(data$CAS_retrieved[i]) %>% suppressWarnings()
       if (length(tmp) != 0) data$Flavornet[i] <- tmp
     }
+    message("Flavornet extraction done.")
   }
+
+  # repositioning the retrieved columns
+  if ("CID" %in% colnames(data)) {
+    data <- relocate(data, Formula:ncol(data), .after = CID)
+  }
+  # remove old columns
+  data <- select(data, !contains("_old"))
 
   return(data)
 }
@@ -291,7 +299,12 @@ extract_classyfire <- function(data) {
   # check if classyfireR is installed
   if (!requireNamespace("classyfireR", quietly = TRUE)) {
     stop("classyfireR is not installed. Please install it first.",
-         call. = FALSE)
+      call. = FALSE
+    )
+  }
+
+  if (!("InChIKey" %in% colnames(data))) {
+    stop("Your data does not contain InChIKey column. Please run extract_meta() first.")
   }
 
   # extract classification from classyfireR
@@ -314,6 +327,16 @@ extract_classyfire <- function(data) {
     do.call("bind_rows", .) %>% # collapse the list into a data.frame
     cbind(classyfire_meta, .) %>% # join with InChIKey
     left_join(data, ., by = "InChIKey") # join with the raw table
+
+
+  # repositioning the classes columns
+  if ("Flavornet" %in% colnames(data)) {
+    data <- relocate(data, kingdom:ncol(data), .after = Flavornet)
+  } else if ("CAS_retrieved" %in% colnames(data)) {
+    data <- relocate(data, kingdom:ncol(data), .after = CAS_retrieved)
+  } else if ("ExactMass" %in% colnames(data)) {
+    data <- relocate(data, kingdom:ncol(data), .after = ExactMass)
+  }
 
   return(data)
 }
