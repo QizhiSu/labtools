@@ -4,7 +4,13 @@
 \alias{read_msdial}
 \title{Read in MS-DIAL exported *.txt file and clean it}
 \usage{
-read_msdial(file, type = "gcms", keep_unknown = FALSE, keep_spectrum = FALSE)
+read_msdial(
+  file,
+  type = "gcms",
+  keep_unknown = FALSE,
+  keep_spectrum = FALSE,
+  keep_mean_sd = FALSE
+)
 }
 \arguments{
 \item{file}{The *.txt file exported from MS-DIAL.}
@@ -15,6 +21,8 @@ lcms is not currently implemented.}
 \item{keep_unknown}{If TRUE, keep unknown compounds.}
 
 \item{keep_spectrum}{If TRUE, keep EI_spectrum column.}
+
+\item{keep_mean_sd}{If TRUE, keep mean and sd columns}
 }
 \value{
 A cleaned table with most important information reserved.

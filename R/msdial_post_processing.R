@@ -5,6 +5,7 @@
 #' lcms is not currently implemented.
 #' @param keep_unknown If TRUE, keep unknown compounds.
 #' @param keep_spectrum If TRUE, keep EI_spectrum column.
+#' @param keep_mean_sd If TRUE, keep mean and sd columns
 #'
 #' @return A cleaned table with most important information reserved.
 #' @export
@@ -15,7 +16,8 @@
 read_msdial <- function(file,
                         type = "gcms",
                         keep_unknown = FALSE,
-                        keep_spectrum = FALSE) {
+                        keep_spectrum = FALSE,
+                        keep_mean_sd = FALSE) {
   if (type == "gcms") {
     # read in the first 4 rows for compiling colnames
     tmp <- rio::import(file, nrows = 4, header = TRUE)
@@ -67,6 +69,10 @@ read_msdial <- function(file,
   # remove EI_spectrum
   if (keep_spectrum == FALSE) {
     data <- select(data, -EI_spectrum)
+  }
+  # remove mean and sd
+  if (keep_mean_sd == FALSE) {
+    data <- select(data, -contains("_Mean"), -contains("_SD"))
   }
 
   # convert rowid to column
