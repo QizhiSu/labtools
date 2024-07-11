@@ -78,18 +78,18 @@ export4msfinder <- function(data,
 export4msdial <- function(data,
                           polarity = "pos",
                           output = "database for msdial.txt") {
-  column_names <- c("Name", "ExactMass")
+  column_names <- c("Name", "ExactMass", "SMILES", "InChIKey")
   if (all(column_names %in% colnames(data)) == FALSE) {
     stop(
-      "Your data does not have Name and ExactMass columns",
+      "Your data does not have Name, ExactMass, InChIKey, Formula, SMILES, and/or SMILES columns",
       "please double-check your data. You can change them accordingly ",
       "or refer to the extract_cid and extract_meta functions."
     )
   }
 
   # subset data
-  data <- data[, c("Name", "ExactMass")]
-  colnames(data) <- c("Metabolite", "MZ")
+  data <- data[, c("Name", "ExactMass", "InChIKey", "Formula", "SMILES")]
+  colnames(data) <- c("Metabolite", "MZ", "InChIKey", "Formula", "SMILES")
   data$RT <- NA
 
   # keep number of rows for later use
@@ -143,6 +143,7 @@ export4msdial <- function(data,
       )
   }
 
+  data <- relocate(data, RT:Adduct, .after = MZ)
   # write txt
   write.table(data, output, sep = "\t", row.names = FALSE)
 }
