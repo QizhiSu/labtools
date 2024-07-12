@@ -86,7 +86,7 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, inchikey_col],
                 match = "first", from = "inchikey"
               )$cid,
-              timeout = 2
+              timeout = 5
             )
           },
           TimeoutException = function(e) NA_character_
@@ -113,7 +113,7 @@ extract_cid <- function(data,
         data$CID[i] <- tryCatch(
           expr = {
             R.utils::withTimeout(webchem::get_cid(data[i, cas_col], match = "first")$cid,
-              timeout = 2
+              timeout = 5
             )
           },
           TimeoutException = function(e) NA_character_
@@ -143,7 +143,7 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, name_col],
                 match = "first", from = "name"
               )$cid,
-              timeout = 2
+              timeout = 5
             )
           },
           TimeoutException = function(e) NA_character_
