@@ -58,9 +58,9 @@ extract_cid <- function(data,
   } else {
     user_input <- readline(paste(
       "Your data already has a CID column. Please check if it is CID from Pubchem.",
-      "Do you want to continue? (yes/no): "
+      "Do you want to continue? (y/n): "
     ))
-    if (user_input == "yes") {
+    if (user_input == "y") {
       message("Existing CID will be kept and only empty CID will be extracted.")
     } else {
       stop("Your data alreadly has CID.")
@@ -86,10 +86,17 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, inchikey_col],
                 match = "first", from = "inchikey"
               )$cid,
-              timeout = 5
+              timeout = 10
             )
           },
-          TimeoutException = function(e) NA_character_
+          error = function(e) {
+            if (verbose) message("Error: ", e$message)
+            NA_character_
+          },
+          TimeoutException = function(e) {
+            if (verbose) message("Timeout: Operation exceeded 5s.")
+            NA_character_
+          }
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
       }
@@ -113,10 +120,17 @@ extract_cid <- function(data,
         data$CID[i] <- tryCatch(
           expr = {
             R.utils::withTimeout(webchem::get_cid(data[i, cas_col], match = "first")$cid,
-              timeout = 5
+              timeout = 10
             )
           },
-          TimeoutException = function(e) NA_character_
+          error = function(e) {
+            if (verbose) message("Error: ", e$message)
+            NA_character_
+          },
+          TimeoutException = function(e) {
+            if (verbose) message("Timeout: Operation exceeded 5s.")
+            NA_character_
+          }
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
       }
@@ -143,10 +157,17 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, name_col],
                 match = "first", from = "name"
               )$cid,
-              timeout = 5
+              timeout = 10
             )
           },
-          TimeoutException = function(e) NA_character_
+          error = function(e) {
+            if (verbose) message("Error: ", e$message)
+            NA_character_
+          },
+          TimeoutException = function(e) {
+            if (verbose) message("Timeout: Operation exceeded 5s.")
+            NA_character_
+          }
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
       }
@@ -159,7 +180,7 @@ extract_cid <- function(data,
   n_no_cid <- sum(is.na(data$CID))
   n_with_cid <- sum(!is.na(data$CID))
 
-  message("\nExtraction done!!\n")
+  message("Extraction done!!")
   message(
     "There are ", nrow(data), " compounds in total, with ", n_with_cid,
     " compounds has CID while ", n_no_cid, " compounds has no CID."
