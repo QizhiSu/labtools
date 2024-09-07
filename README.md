@@ -33,6 +33,8 @@ lab.
 8.  2024.04.21 Version 0.1.01: Add function to filter msp file.
 9.  2024.07.06 Version 0.2.00: Add functions for semiquantification
     analysis.
+10. 2024.09.07 Version 0.2.01: Fix a bug in extract_cid and allow to
+    define timeout for Pubchem API.
 
 ## Installation
 
@@ -117,13 +119,13 @@ follow these steps:
 # Once you have it installed
 library(mspcompiler)
 
-# This function combines all *.MOL files in yhe providing folder into a single 
-# *.sdf file from which will be used to extract SMILES. 
-combine_mol2sdf(input = "D:/my data", 
+# This function combines all *.MOL files in yhe providing folder into a single
+# *.sdf file from which will be used to extract SMILES.
+combine_mol2sdf(input = "D:/my data",
                 output = "D:/my data/mydata.sdf",
                 use_filename = TRUE)
-# The input here is the output from the last command and it will generate a *.txt 
-# file containing Name and SMILES.  
+# The input here is the output from the last command and it will generate a *.txt
+# file containing Name and SMILES.
 extract_structure(input = "D:/my data/mydata.sdf",
                   output = "D:/my data/mydata.txt")
 data <- data %>% assign_meta(meta_file = "D:/my data/mydata.txt")
@@ -156,7 +158,7 @@ locate.
 library(labtools)
 
 data_path <- 'C:/data'
-data <- read_canvas(data_path, 
+data <- read_canvas(data_path,
                     ri_align_tolerance = 5,
                     rt_2d_tolerance = 0.05,
                     keep = 'area')
@@ -224,7 +226,7 @@ remotes::install_github("QizhiSu/mspcompiler")
 library(labtools)
 
 # The input file should be in msp format
-# given you have a list of compounds to be filtered, 
+# given you have a list of compounds to be filtered,
 # you can use the following code to filter the msp file.
 my_data <- rio::import("my_data.xlsx")
 my_data <- my_data %>% extract_cid(name_col = 1, cas_col = 2) %>% extract_meta(cas = TRUE)

@@ -40,7 +40,8 @@ extract_cid <- function(data,
                         name_col = FALSE,
                         cas_col = FALSE,
                         inchikey_col = FALSE,
-                        verbose = TRUE) {
+                        verbose = TRUE,
+                        timeout = 3) {
   # if no column is specified, then stop
   if (name_col == FALSE && cas_col == FALSE && inchikey_col == FALSE) {
     stop(
@@ -86,7 +87,7 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, inchikey_col],
                 match = "first", from = "inchikey"
               )$cid,
-              timeout = 10
+              timeout = timeout
             )
           },
           error = function(e) {
@@ -120,7 +121,7 @@ extract_cid <- function(data,
         data$CID[i] <- tryCatch(
           expr = {
             R.utils::withTimeout(webchem::get_cid(data[i, cas_col], match = "first")$cid,
-              timeout = 10
+              timeout = timeout
             )
           },
           error = function(e) {
@@ -157,7 +158,7 @@ extract_cid <- function(data,
               webchem::get_cid(data[i, name_col],
                 match = "first", from = "name"
               )$cid,
-              timeout = 10
+              timeout = timeout
             )
           },
           error = function(e) {

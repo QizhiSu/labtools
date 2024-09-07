@@ -19,18 +19,18 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of labtools is to provide a set of tools to help facilitate the 
+The goal of labtools is to provide a set of tools to help facilitate the
 handling of data that is commonly used in analytical chemistry laboratories,
 for example extracting metadata for chemicals from Pubchem and then building and
-viewing structure databases, exporting databases for MS-FINDER and MS-DIAL, 
+viewing structure databases, exporting databases for MS-FINDER and MS-DIAL,
 compiling 2 dimensional GC QTOF/MS results exported from Canvas. It is still under
 active development. In the future, more functions will be incorporated based on
 the need of our lab.
 
 ## Release notes
-1. 2023.08.28 Version 0.0.3.0000: Deposite functions to extract chemical metadata 
-from Pubchem previouly incorporated in the fcmsafety package [GitHub](https://github.com/QizhiSu/fcmsafety) and update them accordingly. 
-Further updates will be done in this package while those in thefcmsafety package 
+1. 2023.08.28 Version 0.0.3.0000: Deposite functions to extract chemical metadata
+from Pubchem previouly incorporated in the fcmsafety package [GitHub](https://github.com/QizhiSu/fcmsafety) and update them accordingly.
+Further updates will be done in this package while those in thefcmsafety package
 will remain still.
 2. 2023.08.29 Version 0.0.4.0000: Add export4msdial function.
 3. 2023.08.30 Version 0.0.5.0000: Add navigate_chem function.
@@ -41,6 +41,7 @@ will remain still.
 standards for target compounds.
 8. 2024.04.21 Version 0.1.01: Add function to filter msp file.
 9. 2024.07.06 Version 0.2.00: Add functions for semiquantification analysis.
+10. 2024.09.07 Version 0.2.01: Fix a bug in extract_cid and allow to define timeout for Pubchem API.
 
 ## Installation
 
@@ -54,7 +55,7 @@ You can install the development version of labtools from [GitHub](https://github
 ## Extract chemical information from Pubchem
 ### Read in your data
 
-If you do not have the "rio" and "dplyr" package installed, please install it first. 
+If you do not have the "rio" and "dplyr" package installed, please install it first.
 If you do, just skip this step.
 
 ```{r, eval = FALSE}
@@ -68,10 +69,10 @@ library(fcmsafety)
 library(dplyr)
 ```
 
-Please name your file in English but not Chinese (Chinese letters are not well 
+Please name your file in English but not Chinese (Chinese letters are not well
 supported in some functions). There should be at least one
-column in your data containing either chemical names in English, CAS number, or 
-InChIKey. The program will use any or all of these columns to retrieve meta data 
+column in your data containing either chemical names in English, CAS number, or
+InChIKey. The program will use any or all of these columns to retrieve meta data
 from Pubchem. A good chemical name is always favorable.
 ```{r, eval = FALSE}
 # Please enter the path of your data, e.g., "D:/my data/mydata.xlsx".
@@ -80,9 +81,9 @@ data <- rio::import("D:/my data/mydata.xlsx")
 
 ### Extract cid and meta data
 
-Please specify which column contains CAS number by the "cas_col" argument, 
-InChIKey by "inchikey_col", and chemical name by the "name_col" argument. You 
-can also specify all these arguments. In this case, it will first use InChIKey, 
+Please specify which column contains CAS number by the "cas_col" argument,
+InChIKey by "inchikey_col", and chemical name by the "name_col" argument. You
+can also specify all these arguments. In this case, it will first use InChIKey,
 and then CAS and Name. To get flavornet information, cas = TRUE is required.
 Depends on the size of your data, it might take long time.
 ```{r}
@@ -95,13 +96,13 @@ data <- data %>% extract_cid(name_col = 1) %>% extract_meta(cas = TRUE, flavonet
 ```
 
 ### Assign meta data for chemicals outside Pubchem
-If you have some compounds that are not present in Pubchem, for example many 
+If you have some compounds that are not present in Pubchem, for example many
 oligomers found in food contact materials. there will be no
 SMILES retrieved for these compounds using ```extract_meta```. In this case,
-you can use ```assign_meta``` function. However, a *.txt file containing Name 
+you can use ```assign_meta``` function. However, a *.txt file containing Name
 and SMILES of these compounds is required. There are two options to prepare this
-text file. One is to prepare it manually, the column names must be Name and 
-SMILES, respectively (case-insensitive). Another one is to prepare *.MOL files 
+text file. One is to prepare it manually, the column names must be Name and
+SMILES, respectively (case-insensitive). Another one is to prepare *.MOL files
 (case-insensitive) of these molecules and extract SMILES using ```combine_mol2sdf()```
 and ```extract_structure()``` functions from the ```mspcompiler``` package
 [mspcompiler](https://github.com/QizhiSu/mspcompiler). Note that the name in your *.txt
@@ -114,13 +115,13 @@ as Name is used for matching. Assuming you have all your *MOL files in the
 # Once you have it installed
 library(mspcompiler)
 
-# This function combines all *.MOL files in yhe providing folder into a single 
-# *.sdf file from which will be used to extract SMILES. 
-combine_mol2sdf(input = "D:/my data", 
+# This function combines all *.MOL files in yhe providing folder into a single
+# *.sdf file from which will be used to extract SMILES.
+combine_mol2sdf(input = "D:/my data",
                 output = "D:/my data/mydata.sdf",
                 use_filename = TRUE)
-# The input here is the output from the last command and it will generate a *.txt 
-# file containing Name and SMILES.  
+# The input here is the output from the last command and it will generate a *.txt
+# file containing Name and SMILES.
 extract_structure(input = "D:/my data/mydata.sdf",
                   output = "D:/my data/mydata.txt")
 data <- data %>% assign_meta(meta_file = "D:/my data/mydata.txt")
@@ -128,8 +129,8 @@ data <- data %>% assign_meta(meta_file = "D:/my data/mydata.txt")
 
 ### Extract classyfire information
 
-After extracting meta data from Pubchem by extract_meta(), which means the data 
-will has a column named InChIkey, then we can get the chemical structure 
+After extracting meta data from Pubchem by extract_meta(), which means the data
+will has a column named InChIkey, then we can get the chemical structure
 classification done by classyfire.
 ```{r}
 data <- data %>% extract_classyfire()
@@ -139,18 +140,18 @@ data <- data %>% extract_classyfire()
 ## Read and combine Canvas data
 
 To combine Canvas data, we first need to manually analyze GC x GC data in Canvas,
-mark down peak of interest, and then export marked data in .txt format. All .txt 
+mark down peak of interest, and then export marked data in .txt format. All .txt
 files should be put into a folder as the function will read all .txt in the same
-folder and then combine them into a single table by matching the chemical name. 
-It will evaluate the retention index and second dimensional retention time of a 
-same compound across them samples. If the differences are bigger than the defined 
+folder and then combine them into a single table by matching the chemical name.
+It will evaluate the retention index and second dimensional retention time of a
+same compound across them samples. If the differences are bigger than the defined
 tolerance, it will tell you which samples have significantly different RI or 2D RT,
-such that you can carefully check where the inconsistencies locate. 
+such that you can carefully check where the inconsistencies locate.
 ```{r read canvas data, eval = FALSE}
 library(labtools)
 
 data_path <- 'C:/data'
-data <- read_canvas(data_path, 
+data <- read_canvas(data_path,
                     ri_align_tolerance = 5,
                     rt_2d_tolerance = 0.05,
                     keep = 'area')
@@ -161,8 +162,8 @@ data <- read_canvas(data_path,
 ```
 
 ## Convert database for MS-FINDER
-To export database for MS-FINDER, we first need to extract metadata using 
-```extract_cid``` and ```extract_meta``` and then write it out into a .txt file. 
+To export database for MS-FINDER, we first need to extract metadata using
+```extract_cid``` and ```extract_meta``` and then write it out into a .txt file.
 ```{r export for msfinder, eval = FALSE}
 library(labtools)
 
@@ -174,10 +175,10 @@ export4msfinder(data, "c:/data/structure_database_for_msfinder.txt")
 ```
 
 ## Convert database for MS-DIAL
-To export database for MS-DIAL, we first need to extract metadata using 
-```extract_cid``` and ```extract_meta``` and then write it out into a .txt file. 
+To export database for MS-DIAL, we first need to extract metadata using
+```extract_cid``` and ```extract_meta``` and then write it out into a .txt file.
 The function will then add most commonly used adducts based on the polarity provided,
-and calculate the exactmass for each adducts. This file can be used for 
+and calculate the exactmass for each adducts. This file can be used for
 post-identification in MS-DIAL.
 ```{r export for msdial, eval = FALSE}
 library(labtools)
@@ -214,7 +215,7 @@ remotes::install_github("QizhiSu/mspcompiler")
 library(labtools)
 
 # The input file should be in msp format
-# given you have a list of compounds to be filtered, 
+# given you have a list of compounds to be filtered,
 # you can use the following code to filter the msp file.
 my_data <- rio::import("my_data.xlsx")
 my_data <- my_data %>% extract_cid(name_col = 1, cas_col = 2) %>% extract_meta(cas = TRUE)
