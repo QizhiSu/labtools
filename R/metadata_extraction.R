@@ -271,6 +271,7 @@ extract_meta <- function(data, cas = FALSE, flavornet = FALSE) {
   # retrieve CAS
   if (cas == TRUE) {
     message("Extracting CAS from Pubchem.")
+    data$CAS_retrieved <- NA_character_
     for (i in seq_len(nrow(data))) {
       message(i)
       # keep only the first one.
