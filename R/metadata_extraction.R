@@ -40,12 +40,13 @@ extract_cid <- function(data,
                         name_col = FALSE,
                         cas_col = FALSE,
                         inchikey_col = FALSE,
+                        smiles_col = FALSE,
                         verbose = TRUE,
-                        timeout = 3) {
+                        timeout = 20) {
   # if no column is specified, then stop
-  if (name_col == FALSE && cas_col == FALSE && inchikey_col == FALSE) {
+  if (name_col == FALSE && cas_col == FALSE && inchikey_col == FALSE && smiles_col == FALSE) {
     stop(
-      "Please specify in which column the Chemical name, CAS, or ",
+      "Please specify in which column the Chemical name, CAS, smiles, or ",
       "InChIKey is stored for the extraction purpose.\n",
       "Type ?extract_cid for more information."
     )
@@ -100,6 +101,44 @@ extract_cid <- function(data,
           }
         )
         data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
+      }
+    }
+  }
+
+  if (smiles_col != FALSE) {
+    # message
+    if (verbose) {
+      message(
+        "Extracting CID based on the SMILES provided (column ",
+        smiles_col, ")."
+      )
+    }
+    # for loop extraction
+    for (i in seq_len(nrow(data))) {
+      if (verbose) message(i, " of ", nrow(data))
+      if (is.na(data$CID[i])) {
+        data$CID[i] <- tryCatch(
+          expr = {
+            R.utils::withTimeout(
+              webchem::get_cid(data[i, smiles_col],
+                match = "first", from = "smiles"
+              )$cid,
+              timeout = timeout
+            )
+          },
+          error = function(e) {
+            if (verbose) message("Error: ", e$message)
+            NA_character_
+          },
+          TimeoutException = function(e) {
+            if (verbose) message("Timeout: Operation exceeded 5s.")
+            NA_character_
+          }
+        )
+        data$CID[i] <- as.character(data$CID[i]) # turn it to character is vital
+        if (data$CID[i] == "0") {
+          data$CID[i] <- NA_character_
+        }
       }
     }
   }
