@@ -42,7 +42,7 @@ extract_cid <- function(data,
                         inchikey_col = FALSE,
                         smiles_col = FALSE,
                         verbose = TRUE,
-                        timeout = 20) {
+                        timeout = 100) {
   # if no column is specified, then stop
   if (name_col == FALSE && cas_col == FALSE && inchikey_col == FALSE && smiles_col == FALSE) {
     stop(
@@ -142,7 +142,6 @@ extract_cid <- function(data,
       }
     }
   }
-
 
   # Extract CID based on CAS
   if (cas_col != FALSE) {

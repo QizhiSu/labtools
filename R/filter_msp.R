@@ -45,16 +45,10 @@ filter_msp <- function(msp, cmp_list, keep_napd8 = TRUE, output) {
   inchikey <- cmp_list$InChIKey
 
   # Define a function to check for the presence of a specific InChIKey
-  keep_cmp <- function(element, inchikey) { # nolint
-    if (is.null(element$InChIKey)) {
-      return(FALSE) # Return false for NULL InChIKey
-    } else if (length(element$InChIKey) == 0) {
-      return(FALSE) # Return false for empty list InChIKey
-    } else if (element$InChIKey %in% inchikey) {
-      return(TRUE) # Return true for an exact match
-    } else {
-      return(FALSE)
-    }
+  keep_cmp <- function(element, inchikey) {
+    !is.null(element$InChIKey) &&
+      length(element$InChIKey) > 0 &&
+      element$InChIKey %in% inchikey
   }
 
   # Filter the 'msp' list based on the presence of the desired InChIKey
