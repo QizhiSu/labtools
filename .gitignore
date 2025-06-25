@@ -5,3 +5,12 @@
 labtools_manual.qmd
 .vscode
 /.quarto/
+.roo
+cas_checkpoints.rds
+cid_checkpoints.rds
+flavornet_checkpoints.rds
+syn_checkpoints.rds
+labtools.Rproj
+.vdoc.r
+.Rbuildignore
+
