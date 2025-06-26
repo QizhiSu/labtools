@@ -59,7 +59,7 @@ extract_cid <- function(data,
                         checkpoint_file = "cid_checkpoint.rds",
                         use_checkpoint = TRUE) {
 
-  # 内部函数：单个值查找 CID
+  # Internal function: lookup CID for single value
   lookup_cid <- function(identifier, from, timeout, verbose, max_retries = 3, wait = 2) {
     if (is.na(identifier) || is.null(identifier) || identifier == "") {
       return(NA_character_)
@@ -72,7 +72,7 @@ extract_cid <- function(data,
             res <- webchem::get_cid(identifier, match = "first", from = from)
             cid <- res$cid
             if (is.null(cid) || length(cid) == 0 || cid == 0) {
-              return(NA_character_)  # 查不到 => 不重试
+              return(NA_character_)  # Not found => no retry
             } else {
               return(as.character(cid))
             }
@@ -82,32 +82,32 @@ extract_cid <- function(data,
         error = function(e) NA_character_
       )
 
-      # 成功或查不到 => 不重试
+      # Success or not found => no retry
       if (!is.na(result)) return(result)
 
-      # 否则等待重试
+      # Otherwise wait and retry
       if (attempt < max_retries) Sys.sleep(wait)
     }
 
-    return(NA_character_) # 所有尝试都失败
+    return(NA_character_) # All attempts failed
   }
 
-  # 初始化 CID 列
+  # Initialize CID column
   if (!"CID" %in% colnames(data)) {
     data$CID <- NA_character_
   }
 
-  # checkpoint 比对用 hash
+  # Hash for checkpoint comparison
   data_hash <- digest::digest(data)
 
-  # 尝试从 checkpoint 恢复
+  # Try to restore from checkpoint
   if (use_checkpoint && file.exists(checkpoint_file)) {
     checkpoint <- readRDS(checkpoint_file)
     if (!is.null(attr(checkpoint, "data_hash")) && attr(checkpoint, "data_hash") == data_hash) {
-      if (verbose) message("✅ Resuming from checkpoint: ", checkpoint_file)
+      if (verbose) message(">> Resuming from checkpoint: ", checkpoint_file)
       data <- checkpoint
     } else if (verbose) {
-      message("⚠️ Checkpoint file exists but doesn't match current data. Starting fresh.")
+      message("!! Checkpoint file exists but doesn't match current data. Starting fresh.")
     }
   }
 
@@ -143,19 +143,19 @@ extract_cid <- function(data,
     compound_name <- if (!is.null(name_col)) data[[name_col]][i] else paste0("row ", i)
 
     if (!is.na(found_cid)) {
-      if (verbose) message("✅ CID ", found_cid, " found via ", toupper(used_method), " for: \"", compound_name, "\"")
+      if (verbose) message(">> CID ", found_cid, " found via ", toupper(used_method), " for: \"", compound_name, "\"")
     } else {
-      if (verbose) message("❌ No CID found for: \"", compound_name, "\"")
+      if (verbose) message("XX No CID found for: \"", compound_name, "\"")
     }
 
     if (i %% 10 == 0) {
       attr(data, "data_hash") <- data_hash
       saveRDS(data, checkpoint_file)
-      if (verbose) message("💾 Checkpoint saved at row ", i)
+      if (verbose) message(">> Checkpoint saved at row ", i)
     }
   }
 
-  # 最后一次保存
+  # Final save
   attr(data, "data_hash") <- data_hash
   saveRDS(data, checkpoint_file)
 
@@ -163,9 +163,9 @@ extract_cid <- function(data,
 
   found <- sum(!is.na(data$CID))
   not_found <- sum(is.na(data$CID))
-  message("✅ CID extraction completed: ", found, " found, ", not_found, " not found.")
+  message(">> CID extraction completed: ", found, " found, ", not_found, " not found.")
 
-  # 提示音（需 beepr 包）
+  # Notification sound (requires beepr package)
   if (requireNamespace("beepr", quietly = TRUE)) {
     beepr::beep(1)
   }
@@ -246,14 +246,14 @@ extract_meta <- function(data,
   if (!("CID" %in% names(data))) stop("Missing CID column. Please run extract_cid() first.")
   if (flavornet && !cas) stop("To extract Flavornet, please also set cas = TRUE.")
 
-  message("🧪 Input data: ", nrow(data), " rows total.")
-  message("📌 CID status: ", sum(!is.na(data$CID)), " non-empty, ", sum(is.na(data$CID)), " missing.")
+  message(">> Input data: ", nrow(data), " rows total.")
+  message(">> CID status: ", sum(!is.na(data$CID)), " non-empty, ", sum(is.na(data$CID)), " missing.")
 
   data$CID <- as.integer(data$CID)
   data_hash <- digest::digest(data)
 
   # --- Structural metadata ---
-  if (verbose) message("\n🔍 Extracting core PubChem metadata...")
+  if (verbose) message("\n>> Extracting core PubChem metadata...")
   props <- c("MolecularFormula", "MolecularWeight", "IsomericSMILES", "InChI", "InChIKey", "IUPACName", "ExactMass")
   cid_list <- data$CID
   cid_info <- tryCatch(
@@ -275,13 +275,13 @@ extract_meta <- function(data,
     if (col != "CID") {
       new_col <- col
       if (col %in% names(data)) {
-        # 如果已经有这个列名，就加后缀 _1
+        # If column name already exists, add suffix _1
         suffix_idx <- 1
         while (paste0(col, "_", suffix_idx) %in% names(data)) {
           suffix_idx <- suffix_idx + 1
         }
         new_col <- paste0(col, "_", suffix_idx)
-        if (verbose) message(sprintf("⚠️ Column '%s' already exists, writing to '%s' instead.", col, new_col))
+        if (verbose) message(sprintf("!! Column '%s' already exists, writing to '%s' instead.", col, new_col))
       }
       data[[new_col]] <- cid_info[[col]][idx]
     }
@@ -290,7 +290,7 @@ extract_meta <- function(data,
 
   # --- CAS ---
   if (cas) {
-    if (verbose) message("\n🔎 Extracting CAS (section + synonyms fallback).")
+    if (verbose) message("\n>> Extracting CAS (section + synonyms fallback).")
     cas_col <- if ("CAS" %in% names(data)) "CAS_1" else "CAS"
     if (!(cas_col %in% names(data))) data[[cas_col]] <- NA_character_
     cas_cp <- file.path(checkpoint_dir, "cas_checkpoint.rds")
@@ -300,11 +300,11 @@ extract_meta <- function(data,
     if (file.exists(cas_cp)) {
       cp <- readRDS(cas_cp)
       if (!is.null(attr(cp, "data_hash")) && attr(cp, "data_hash") == data_hash) {
-        if (verbose) message("✅ CAS checkpoint matched.")
+        if (verbose) message(">> CAS checkpoint matched.")
         data[[cas_col]] <- cp$value
         cas_source <- cp$source
         checkpoint_matched <- TRUE
-      } else if (verbose) message("⚠️ CAS checkpoint mismatch. Ignoring.")
+      } else if (verbose) message("!! CAS checkpoint mismatch. Ignoring.")
     }
 
     found <- sum(!is.na(data[[cas_col]]))
@@ -324,12 +324,12 @@ extract_meta <- function(data,
       compound_name <- if ("Name" %in% names(data)) data$Name[i] else paste0("row ", i)
 
       if (is.na(cid)) {
-        if (!checkpoint_matched && verbose) message(sprintf("❌ No CID for row %d (%s), skipping CAS extraction.", i, compound_name))
+        if (!checkpoint_matched && verbose) message(sprintf("XX No CID for row %d (%s), skipping CAS extraction.", i, compound_name))
         next
       }
 
       if (!is.na(data[[cas_col]][i])) {
-        if (!checkpoint_matched && verbose) message(sprintf("⏭️ CAS already present for CID %s, skipping.", cid))
+        if (!checkpoint_matched && verbose) message(sprintf(">> CAS already present for CID %s, skipping.", cid))
         next
       }
 
@@ -342,7 +342,7 @@ extract_meta <- function(data,
         val <- sect[[1]]
         source_type <- "section"
         found <- found + 1
-        if (!checkpoint_matched && verbose) message(sprintf("✅ CAS %s found for CID %s (section).", val, cid))
+        if (!checkpoint_matched && verbose) message(sprintf(">> CAS %s found for CID %s (section).", val, cid))
       } else {
         syns <- tryCatch(webchem::pc_synonyms(cid, from = "cid"), error = function(e) NULL)
         if (is.list(syns)) {
@@ -351,24 +351,24 @@ extract_meta <- function(data,
             val <- cas_like[1]
             source_type <- "synonym"
             found <- found + 1
-            if (!checkpoint_matched && verbose) message(sprintf("✅ CAS %s found for CID %s (synonym).", val, cid))
+            if (!checkpoint_matched && verbose) message(sprintf(">> CAS %s found for CID %s (synonym).", val, cid))
           }
         }
       }
 
       data[[cas_col]][i] <- val
       cas_source[i] <- source_type
-      if (is.na(val) && !checkpoint_matched && verbose) message(sprintf("❌ No CAS found for CID %s.", cid))
+      if (is.na(val) && !checkpoint_matched && verbose) message(sprintf("XX No CAS found for CID %s.", cid))
 
       saveRDS(structure(list(value = data[[cas_col]], source = cas_source), data_hash = data_hash), cas_cp)
     }
 
-    message(sprintf("✅ CAS extraction done, Found: %d, Not found: %d", found, total - found))
+    message(sprintf(">> CAS extraction done, Found: %d, Not found: %d", found, total - found))
   }
 
   # --- Flavornet ---
   if (flavornet) {
-    if (verbose) message("\n🌸 Extracting Flavornet sensory data.")
+    if (verbose) message("\n>> Extracting Flavornet sensory data.")
     if (!"Flavornet" %in% names(data)) data$Flavornet <- NA_character_
     flav_cp <- file.path(checkpoint_dir, "flavornet_checkpoint.rds")
 
@@ -376,10 +376,10 @@ extract_meta <- function(data,
     if (file.exists(flav_cp)) {
       cp <- readRDS(flav_cp)
       if (!is.null(attr(cp, "data_hash")) && attr(cp, "data_hash") == data_hash) {
-        if (verbose) message("✅ Flavornet checkpoint matched.")
+        if (verbose) message(">> Flavornet checkpoint matched.")
         data$Flavornet <- cp$value
         checkpoint_matched <- TRUE
-      } else if (verbose) message("⚠️ Flavornet checkpoint mismatch. Ignoring.")
+      } else if (verbose) message("!! Flavornet checkpoint mismatch. Ignoring.")
     }
 
     cas_field <- if ("CAS_1" %in% names(data)) "CAS_1" else "CAS"
@@ -398,32 +398,32 @@ extract_meta <- function(data,
 
       cas_val <- data[[cas_field]][i]
       if (is.na(cas_val)) {
-        if (!checkpoint_matched && verbose) message(sprintf("❌ No CAS for row %d, skipping Flavornet extraction.", i))
+        if (!checkpoint_matched && verbose) message(sprintf("XX No CAS for row %d, skipping Flavornet extraction.", i))
         next
       }
 
       if (!is.na(data$Flavornet[i])) {
-        if (!checkpoint_matched && verbose) message(sprintf("⏭️ Flavornet already present for CAS %s, skipping.", cas_val))
+        if (!checkpoint_matched && verbose) message(sprintf(">> Flavornet already present for CAS %s, skipping.", cas_val))
         next
       }
 
       val <- tryCatch(webchem::fn_percept(cas_val), error = function(e) NA_character_)
       if (!is.na(val)) {
         found <- found + 1
-        if (!checkpoint_matched && verbose) message(sprintf("✅ Flavornet found for CAS %s: %s", cas_val, val))
+        if (!checkpoint_matched && verbose) message(sprintf(">> Flavornet found for CAS %s: %s", cas_val, val))
       } else {
-        if (!checkpoint_matched && verbose) message(sprintf("❌ No Flavornet found for CAS %s.", cas_val))
+        if (!checkpoint_matched && verbose) message(sprintf("XX No Flavornet found for CAS %s.", cas_val))
       }
       data$Flavornet[i] <- val
 
       saveRDS(structure(list(value = data$Flavornet), data_hash = data_hash), flav_cp)
     }
-    message(sprintf("✅ Flavornet extraction done, Found: %d, Not found: %d", found, total - found))
+    message(sprintf(">> Flavornet extraction done, Found: %d, Not found: %d", found, total - found))
   }
 
   # --- Synonyms ---
   if (synonyms) {
-    if (verbose) message("\n📚 Extracting synonyms from PubChem.")
+    if (verbose) message("\n>> Extracting synonyms from PubChem.")
     if (!"Synonyms" %in% names(data)) data$Synonyms <- NA_character_
     syn_cp <- file.path(checkpoint_dir, "syn_checkpoint.rds")
 
@@ -431,10 +431,10 @@ extract_meta <- function(data,
     if (file.exists(syn_cp)) {
       cp <- readRDS(syn_cp)
       if (!is.null(attr(cp, "data_hash")) && attr(cp, "data_hash") == data_hash) {
-        if (verbose) message("✅ Synonym checkpoint matched.")
+        if (verbose) message(">> Synonym checkpoint matched.")
         data$Synonyms <- cp$value
         checkpoint_matched <- TRUE
-      } else if (verbose) message("⚠️ Synonym checkpoint mismatch. Ignoring.")
+      } else if (verbose) message("!! Synonym checkpoint mismatch. Ignoring.")
     }
 
     found <- sum(!is.na(data$Synonyms))
@@ -452,12 +452,12 @@ extract_meta <- function(data,
 
       cid <- data$CID[i]
       if (is.na(cid)) {
-        if (!checkpoint_matched && verbose) message(sprintf("❌ No CID for row %d, skipping synonyms extraction.", i))
+        if (!checkpoint_matched && verbose) message(sprintf("XX No CID for row %d, skipping synonyms extraction.", i))
         next
       }
 
       if (!is.na(data$Synonyms[i])) {
-        if (!checkpoint_matched && verbose) message(sprintf("⏭️ Synonyms already present for CID %s, skipping.", cid))
+        if (!checkpoint_matched && verbose) message(sprintf(">> Synonyms already present for CID %s, skipping.", cid))
         next
       }
 
@@ -467,15 +467,15 @@ extract_meta <- function(data,
         if (nzchar(syn_str)) {
           data$Synonyms[i] <- syn_str
           found <- found + 1
-          if (!checkpoint_matched && verbose) message(sprintf("✅ Synonyms found for CID %s.", cid))
+          if (!checkpoint_matched && verbose) message(sprintf(">> Synonyms found for CID %s.", cid))
           saveRDS(structure(list(value = data$Synonyms), data_hash = data_hash), syn_cp)
           next
         }
       }
-      if (!checkpoint_matched && verbose) message(sprintf("❌ No synonyms found for CID %s.", cid))
+      if (!checkpoint_matched && verbose) message(sprintf("XX No synonyms found for CID %s.", cid))
       saveRDS(structure(list(value = data$Synonyms), data_hash = data_hash), syn_cp)
     }
-    message(sprintf("✅ Synonyms extraction done, Found: %d, Not found: %d", found, total - found))
+    message(sprintf(">> Synonyms extraction done, Found: %d, Not found: %d", found, total - found))
   }
 
   if (requireNamespace("beepr", quietly = TRUE)) beepr::beep(1)
@@ -559,14 +559,14 @@ extract_classyfire <- function(data, inchikey_col = "InChIKey", name_col = "Name
       }, error = function(e) NULL)
 
       if (!is.null(class_df)) {
-        message(sprintf("✅ Classification found via InChIKey for %s", compound_name))
+        message(sprintf(">> Classification found via InChIKey for %s", compound_name))
         class_df[[inchikey_col]] <- inchikey
         classy_list[[inchikey]] <- class_df
       } else {
-        message(sprintf("❌ Unclassified for %s", compound_name))
+        message(sprintf("XX Unclassified for %s", compound_name))
       }
     } else {
-      message(sprintf("❌ Unclassified for %s", compound_name))
+      message(sprintf("XX Unclassified for %s", compound_name))
     }
   }
 
@@ -629,31 +629,31 @@ extract_classyfire <- function(data, inchikey_col = "InChIKey", name_col = "Name
 assign_meta <- function(data, meta_file) {
   meta_data <- rio::import(meta_file)
 
-  # 标准化列名
+  # Standardize column names
   names(data)[grepl("name", names(data), ignore.case = TRUE)] <- "Name"
   names(meta_data)[grepl("name", names(meta_data), ignore.case = TRUE)] <- "Name"
   names(meta_data)[grepl("smiles", names(meta_data), ignore.case = TRUE)] <- "SMILES"
   names(meta_data)[grepl("inchikey", names(meta_data), ignore.case = TRUE)] <- "InChIKey"
   names(meta_data)[grepl("^inchi$", names(meta_data), ignore.case = TRUE)] <- "InChI"
 
-  # 标准化匹配键
+  # Standardize matching keys
   key_data <- trimws(tolower(data$Name))
   key_meta <- trimws(tolower(meta_data$Name))
   idx <- match(key_data, key_meta)
 
-  # 如果没有 SMILES 列，创建一个
+  # If no SMILES column exists, create one
   if (!"SMILES" %in% names(data)) data$SMILES <- NA
   is_missing <- is.na(data$SMILES)
   data$SMILES[is_missing] <- meta_data$SMILES[idx[is_missing]]
 
-  # 赋值 InChIKey
+  # Assign InChIKey
   if ("InChIKey" %in% names(meta_data)) {
     if (!"InChIKey" %in% names(data)) data$InChIKey <- NA
     is_missing <- is.na(data$InChIKey)
     data$InChIKey[is_missing] <- meta_data$InChIKey[idx[is_missing]]
   }
 
-  # 赋值 InChI
+  # Assign InChI
   if ("InChI" %in% names(meta_data)) {
     if (!"InChI" %in% names(data)) data$InChI <- NA
     is_missing <- is.na(data$InChI)

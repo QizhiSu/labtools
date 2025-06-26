@@ -2,3 +2,12 @@
 ^\.Rproj\.user$
 ^README\.Rmd$
 ^\.vscode$
+^\.quarto$
+^labtools_manual\.qmd$
+^\.vdoc\.r$
+^R/test\.R$
+^\.roo$
+^.*_checkpoint\.rds$
+^mol_files$
+^\.git$
+^\.gitignore$

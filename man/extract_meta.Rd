@@ -2,37 +2,78 @@
 % Please edit documentation in R/metadata_extraction.R
 \name{extract_meta}
 \alias{extract_meta}
-\title{Extract meta data from Pubchem}
+\title{Extract metadata from PubChem for compounds with CIDs}
 \usage{
-extract_meta(data, cas = FALSE, flavornet = FALSE)
+extract_meta(
+  data,
+  cas = FALSE,
+  flavornet = FALSE,
+  synonyms = FALSE,
+  verbose = TRUE,
+  checkpoint_dir = "."
+)
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least CID column.}
+\item{data}{A data.frame or tibble containing at least a \code{CID} column
+(integer or numeric). Typically produced by \code{\link{extract_cid}}.}
 
-\item{cas}{A logical value to determine if you want to retrieve CAS. It will
-generate a new column named "CAS_retrieved". It is necessary for extracting
-flavornet information.}
+\item{cas}{Logical, whether to extract CAS registry numbers. If \code{TRUE},
+CAS extraction is performed with fallback from PubChem sections to synonyms.}
 
-\item{flavornet}{A logical value for flavornet information retrieval.
-cas = TRUE is required for this purpose.}
+\item{flavornet}{Logical, whether to extract Flavornet sensory descriptors.
+Requires \code{cas = TRUE} because it depends on CAS numbers.}
+
+\item{synonyms}{Logical, whether to extract compound synonyms from PubChem.}
+
+\item{verbose}{Logical, whether to print progress and status messages.}
+
+\item{checkpoint_dir}{Character, directory path where checkpoint files are
+stored and loaded. Defaults to current directory \code{"."}.}
 }
 \value{
-A data.frame or tibble with IsomericSMILES, InChIKey, ExactMass,
-and MolecularFormula extracted.
+A data.frame or tibble identical to the input \code{data}, but with
+added columns for the extracted metadata:
+\itemize{
+\item Core PubChem properties: \code{Formula}, \code{MW}, \code{SMILES},
+\code{InChI}, \code{InChIKey}, \code{IUPAC_Name}, \code{Exact_Mass}.
+\item CAS number (in a new column \code{CAS_1} if \code{CAS} already exists).
+\item Flavornet sensory data in \code{Flavornet}.
+\item Compound synonyms in \code{Synonyms}.
+}
+
+Intermediate results are saved as checkpoint files in \code{checkpoint_dir}.
+On re-running with the same input data, the function will resume from the
+checkpoint to avoid repeating completed queries.
 }
 \description{
-\code{extract_meta()} is a wrapper of the the \code{pc_prop()} function from
-the \emph{webchem}. It extracts only \strong{"IsomericSMILES", "InChIKey",
-"ExactMass", "MolecularFormula"} properties and appends them into the input
-data.frame or tibble. It also support extracting CAS number with the cas
-argument and flavor information from Flavornet with the flavornet argument.
-It can be used together with the \code{extract_cid()}
-function. If you previously have columns named "SMILES", "InChIKey", "ExactMass",
-or "Formula", they will be modified to "_old" suffix.
+\code{extract_meta()} extracts chemical metadata from PubChem based on the
+CID (Compound ID) column in the input data.frame or tibble. It retrieves
+structural properties such as molecular formula, molecular weight, SMILES,
+InChI, InChIKey, IUPAC name, and exact mass. Additionally, it can extract CAS
+numbers, Flavornet sensory data, and synonyms from PubChem when requested.
+}
+\details{
+The function supports checkpointing to save intermediate results, allowing
+long-running queries to resume from the last saved state without repeating
+completed steps.
+
+This function requires internet access to query the PubChem and Flavornet
+databases via the \pkg{webchem} package.
+
+The CAS number extraction tries first from PubChem's "section" data, and if
+unsuccessful, falls back to searching the synonyms list for CAS-like strings.
+
+Checkpoints are matched via a hash of the input \code{data} to ensure
+correspondence between saved intermediate results and current inputs.
 }
 \examples{
-# Together with \code{extract_cid()}
-library(dplyr)
-x <- data.frame(CAS = "128-37-0", Name = "BHT")
-x_cid <- extract_cid(x, cas_col = 1, name_col = 2) \%>\% extract_meta()
+\dontrun{
+library(webchem)
+# Suppose df_cid is your data with a CID column already obtained by extract_cid()
+df_meta <- extract_meta(df_cid, cas = TRUE, flavornet = TRUE, synonyms = TRUE)
+}
+
+}
+\seealso{
+\code{\link{extract_cid}}, \pkg{webchem}
 }

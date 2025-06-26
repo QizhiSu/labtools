@@ -1,7 +1,7 @@
 Package: labtools
 Title: Tools to Ease Handling of Data common in Analytical Chemistry Laboratories
-Version: 0.2.01
-Date: 2024-09-07
+Version: 0.3.00
+Date: 2025-06-25
 Authors@R:
     person("Qizhi", "Su", , "sukissqz@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "https://orcid.org/0000-0002-8124-997X"))
@@ -13,26 +13,30 @@ Description: This package aims to provide a set of tools to help facilitate the
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Depends: R (>= 3.5.0)
 Imports:
+    beepr,
+    classyfireR,
+    digest,
     dplyr,
     DT,
+    ggplot2,
     glue,
+    janitor,
+    mspcompiler,
+    plotly,
+    proxy,
     purrr,
     R.utils,
+    randomForest,
+    rcdk,
     rio,
     shiny,
-    utils,
-    webchem,
     shinyjs,
-    janitor,
     tibble,
-    proxy,
-    randomForest,
-    mspcompiler,
-    classyfireR,
-    rcdk
+    utils,
+    webchem
 Remotes:
     QizhiSu/mspcompiler,
     aberHRML/classyfireR

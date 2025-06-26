@@ -1,31 +1,75 @@
-library(stringr)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(plotly)
-
-# section -----------------------------------------------------------
+#' Convert spectral string to a named numeric intensity vector
+#'
+#' This function parses a space-separated string of m/z:intensity pairs (e.g., "100:30 120:90")
+#' into a named numeric vector representing a binned and normalized mass spectrum.
+#' It forms the foundation for downstream spectral similarity and visualization tasks.
+#'
+#' @param spectrum_str A character string representing the spectrum,
+#' formatted as "m/z1:intensity1 m/z2:intensity2 ...".
+#' @param start_mz Numeric. Starting m/z value of the output vector. Default is 50.
+#' @param end_mz Numeric. Ending m/z value of the output vector. Default is 500.
+#' @param mz_step Numeric. Step size (bin width) for m/z axis. Default is 1.
+#' @param digits Integer. Number of decimal places to which m/z values are rounded. Default is 0.
+#'
+#' @return A named numeric vector of intensities, where names are m/z values (as characters).
+#'
+#' @examples
+#' update_spectrum("98.7:10 99.9:20 101.2:15", start_mz = 98, end_mz = 102)
+#'
+#' @export
 update_spectrum <- function(spectrum_str, start_mz = 50, end_mz = 500, mz_step = 1, digits = 0) {
-  # create empty spectrum
+  # Create empty spectrum vector
   mz_range <- seq(start_mz, end_mz, by = mz_step)
   spectrum <- numeric(length(mz_range))
-  names(spectrum) <- mz_range
+  names(spectrum) <- as.character(mz_range)
 
-  # update spectrum
-  values <- str_split(spectrum_str, " ")[[1]]
-  m_z_intensity <- do.call(rbind, str_split(values, ":"))
-  m_z <- round(as.numeric(m_z_intensity[, 1]), digits = digits)
-  intensity <- as.numeric(m_z_intensity[, 2])
-  m_z_intensity <- data.frame(m_z, intensity) # convert to data frame
-  m_z_intensity <- filter(m_z_intensity, m_z >= start_mz & m_z <= end_mz)
-  m_z_intensity <- distinct(m_z_intensity, m_z, .keep_all = TRUE) # remove duplicated mz
-  spectrum[names(spectrum) %in% m_z_intensity$m_z] <- m_z_intensity$intensity
+  # Split spectrum string into m/z:intensity pairs
+  values <- strsplit(spectrum_str, " ")[[1]]
+  pairs <- strsplit(values, ":")
+
+  # Extract m/z and intensity
+  m_z <- sapply(pairs, function(x) as.numeric(x[1]))
+  intensity <- sapply(pairs, function(x) as.numeric(x[2]))
+
+  # Round m/z values
+  m_z <- round(m_z, digits)
+
+  # Filter by range
+  in_range <- m_z >= start_mz & m_z <= end_mz
+  m_z <- m_z[in_range]
+  intensity <- intensity[in_range]
+
+  # Remove duplicated m/z (keep first occurrence)
+  unique_mz <- !duplicated(m_z)
+  m_z <- m_z[unique_mz]
+  intensity <- intensity[unique_mz]
+
+  # Assign intensity values
+  spectrum_match <- as.character(m_z)
+  spectrum[spectrum_match] <- intensity
 
   return(spectrum)
 }
 
-# section -----------------------------------------------------------
-# Function to calculate cosine similarity between two spectra
+
+#' Calculate cosine similarity between two spectra
+#'
+#' Computes the cosine similarity between two numeric spectra, typically mass spectra,
+#' by matching shared m/z values and evaluating vector similarity.
+#'
+#' @param spec1 A named numeric vector representing spectrum 1 (m/z as names, intensity as values).
+#' @param spec2 A named numeric vector representing spectrum 2.
+#'
+#' @return A numeric value between 0 and 1 representing the cosine similarity.
+#' If there are no common m/z values, returns 0.
+#'
+#' @examples
+#' spec1 <- update_spectrum("100:10 150:20 200:30")
+#' spec2 <- update_spectrum("100:10 150:25 250:40")
+#' cosine_similarity(spec1, spec2)
+#'
+#' @export
+#'
 cosine_similarity <- function(spec1, spec2) {
   common_mz <- intersect(names(spec1), names(spec2))
   if (length(common_mz) == 0) {
@@ -38,7 +82,28 @@ cosine_similarity <- function(spec1, spec2) {
   return(dot_product / (magnitude1 * magnitude2))
 }
 
-# section -----------------------------------------------------------
+
+#' Plot a single mass spectrum
+#'
+#' Creates an interactive bar plot of a single spectrum using ggplot2 and plotly.
+#' Peaks are normalized to 100% intensity. The highest peak in each m/z bin is optionally labeled.
+#'
+#' @param spectrum A named numeric vector representing the spectrum (m/z as names, intensity as values).
+#' @param range Integer. The bin width (in m/z) used to identify local peak maxima for labeling. Default is 10.
+#' @param threshold Numeric. The minimum intensity (in %) a peak must have to be labeled. Default is 1.
+#' @param max_ticks Integer. Maximum number of x-axis tick marks. Default is 20.
+#'
+#' @return An interactive plotly plot showing the mass spectrum.
+#'
+#' @examples
+#' spectrum <- update_spectrum("100:30 120:80 145:60 170:90 200:20")
+#' plot_spectrum(spectrum)
+#'
+#' @importFrom ggplot2 ggplot aes geom_bar scale_y_continuous scale_x_continuous theme_classic theme element_line element_text geom_text
+#' @importFrom dplyr mutate group_by ungroup filter select
+#' @importFrom plotly ggplotly
+#' @export
+#'
 plot_spectrum <- function(spectrum, range = 10, threshold = 1, max_ticks = 20) {
   # Convert spectrum to data frame
   spectrum_df <- data.frame(x = as.numeric(names(spectrum)), y = spectrum)
@@ -99,6 +164,8 @@ plot_spectrum <- function(spectrum, range = 10, threshold = 1, max_ticks = 20) {
 
 
 # section -----------------------------------------------------------
+#' @importFrom ggplot2 aes geom_bar geom_hline scale_fill_manual theme_classic theme element_line element_text coord_cartesian geom_text
+#' @importFrom dplyr bind_rows group_by mutate ungroup filter select
 plot_mirrored_spectrum <- function(spec1, spec2, range = 20, threshold = 1, max_ticks = 20) {
   # Convert spectra to data frames
   spectrum_df1 <- data.frame(x = as.numeric(names(spec1)), y = spec1)

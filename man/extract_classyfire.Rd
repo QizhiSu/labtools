@@ -2,16 +2,39 @@
 % Please edit documentation in R/metadata_extraction.R
 \name{extract_classyfire}
 \alias{extract_classyfire}
-\title{Extract classyfire information}
+\title{Extract chemical classification via ClassyFire}
 \usage{
-extract_classyfire(data)
+extract_classyfire(data, inchikey_col = "InChIKey", name_col = "Name")
 }
 \arguments{
-\item{data}{Data includes at least InChIKey which is used for retrieval}
+\item{data}{A data.frame or tibble containing at least one column with InChIKeys.}
+
+\item{inchikey_col}{A string specifying the name of the column that contains InChIKeys. Default is \code{"InChIKey"}.}
+
+\item{name_col}{A string specifying the name of the column that contains compound names (for message display). Default is \code{"Name"}.}
 }
 \value{
-A data.frame
+A data.frame with appended classification columns such as Kingdom, Superclass, Class, etc.
 }
 \description{
-Extract classyfire information
+This function queries the \href{http://classyfire.wishartlab.com/}{ClassyFire} database
+using InChIKey for each unique compound in a dataset and retrieves hierarchical
+chemical classifications (e.g., Kingdom, Superclass, Class, Subclass).
+}
+\details{
+It displays progress and messages for each compound during processing. If a classification
+is found, it is merged back to the original dataset by InChIKey. Classification data
+is optionally repositioned after known reference columns (e.g., "ExactMass").
+
+This function only uses InChIKey to retrieve data via \code{classyfireR::get_classification()}.
+The fallback using SMILES/InChI via \code{submit_query()} is \strong{not used}, as that API is currently unavailable.
+}
+\examples{
+\dontrun{
+library(classyfireR)
+df <- data.frame(InChIKey = c("XMGQYMWWDOXHJM-UHFFFAOYSA-N"),
+                 Name = c("Limonene"))
+extract_classyfire(df)
+}
+
 }

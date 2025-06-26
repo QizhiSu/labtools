@@ -49,6 +49,12 @@ utils::globalVariables(
     "EI_spectrum",
     "Flavornet",
     "CAS_retrieved",
-    "kingdom"
+    "kingdom",
+    "x",
+    "y",
+    "spectrum",
+    "is_highest_in_bin",
+    "ID",
+    "bin"
   )
 )

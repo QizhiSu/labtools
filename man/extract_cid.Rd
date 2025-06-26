@@ -2,49 +2,71 @@
 % Please edit documentation in R/metadata_extraction.R
 \name{extract_cid}
 \alias{extract_cid}
-\title{Extract compound identification number (CID) from Pubchem}
+\title{Extract PubChem Compound ID (CID) using various identifiers}
 \usage{
 extract_cid(
   data,
-  name_col = FALSE,
-  cas_col = FALSE,
-  inchikey_col = FALSE,
-  verbose = TRUE
+  name_col = "Name",
+  cas_col = "CAS",
+  inchikey_col = "InChIKey",
+  timeout = 180,
+  verbose = TRUE,
+  checkpoint_file = "cid_checkpoint.rds",
+  use_checkpoint = TRUE
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble contains at least CAS, Chemical name, or
-InChIKey column.}
+\item{data}{A \code{data.frame} or \code{tibble} containing compound
+information. A column named \code{"CID"} will be created if not already present.}
 
-\item{name_col}{The index of column that contains chemical name.}
+\item{name_col}{The column name or index containing compound names to be used for CID lookup. Defaults to `"Name"``.}
 
-\item{cas_col}{The index of column that contains CAS information. CAS number
-is not mandatory for each compound, if no CAS is available, then chemical name
-will be used for retrieval.}
+\item{cas_col}{The column name or index containing CAS numbers to be used for CID lookup. Defaults to `"CAS"``.}
 
-\item{inchikey_col}{The index of column that contains InChIKey. It is optional.}
+\item{inchikey_col}{The column name or index containing InChIKeys to be used for CID lookup. Defaults to \code{"InChIKey"}.}
 
-\item{verbose}{Whether or not to show verbose information during extraction}
+\item{timeout}{Timeout (in seconds) for each PubChem request. Defaults to 120.}
+
+\item{verbose}{Logical. If \code{TRUE}, print progress and status messages. Defaults to \code{TRUE}.}
+
+\item{checkpoint_file}{File path for storing and resuming from checkpoint. Defaults to \code{"cid_checkpoint.rds"}.}
+
+\item{use_checkpoint}{Logical. Whether to use and save checkpoint file. Defaults to \code{TRUE}.}
 }
 \value{
-A data.frame or tibble with a CID column added.
+The input \code{data.frame} with a \code{CID} column filled in. Any found CIDs
+will be shown with a success message in the console indicating the identifier type used.
 }
 \description{
-\code{extract_cid()} is a simple wrapper of the \code{get_cid()} function from
-the \emph{webchem} package. It extracts \strong{cid} based on the keys, i.e.,
-\strong{InChIKey}, \strong{CAS} and \strong{chemical names}. You can use
-any or all of these keys. In the latter case, it will first use InChIKey,
-followed by CAS and chemical name if no CID is available from the previous step.
-When multiple matches returns, only the first one will be kept. Importantly,
-it appends these information to your original data.frame, which is more friendly
-for new R users. Only English chemical name is accepted.
+\code{extract_cid()} retrieves PubChem CIDs based on compound identifiers
+such as InChIKey, CAS number, or compound name. It attempts each identifier
+in order and records the CID in a new column. Lookup results are saved to a
+checkpoint file to support resuming interrupted processes.
+}
+\details{
+The function uses \code{webchem::get_cid()} under the hood and handles
+timeouts or web request errors gracefully. If a compound cannot be matched
+to a CID, it is reported clearly in the console output. For efficiency and
+fault tolerance, results are saved to disk every 10 records using
+\code{saveRDS()}. If a matching checkpoint is found, the function resumes
+from it.
+
+CID lookup is attempted in the following order (if columns are provided): InChIKey, CAS, Name.
+Timeouts and unexpected errors during PubChem queries are caught silently and do not interrupt the process.
+The function prints a summary when finished and optionally plays a notification sound if the \code{beepr} package is installed.
 }
 \examples{
-# without InChIKey
-x <- data.frame(CAS = "128-37-0", Name = "BHT")
-x_cid <- extract_cid(x, cas_col = 1, name_col = 2)
+\dontrun{
+df <- data.frame(
+  Name = c("bisphenol A", "acetone"),
+  InChIKey = c("JUZNXVGZRYFYFW-UHFFFAOYSA-N", NA),
+  CAS = c("80-05-7", NA),
+  stringsAsFactors = FALSE
+)
+df_with_cid <- extract_cid(df, name_col = "Name", cas_col = "CAS", inchikey_col = "InChIKey")
+}
 
-# with InChIKey
-x <- data.frame(CAS = "128-37-0", Name = "BHT", InChIKey = "NLZUEZXRPGMBCV-UHFFFAOYSA-N")
-x_cid <- extract_cid(x, cas_col = 1, name_col = 2, inchikey_col = 3)
+}
+\seealso{
+\code{\link[webchem]{get_cid}}, \code{\link[beepr]{beep}}
 }

@@ -344,7 +344,7 @@ organize_con <- function(
     ~ select(dplyr::bind_cols(df_mean, df_sd), contains(.x)) %>%
       mutate(
         !!.x := apply(., 1, function(x) {
-          paste(format(na.omit(round(x, digits = digits)), nsmall = digits), collapse = " ± ")
+          paste(format(na.omit(round(x, digits = digits)), nsmall = digits), collapse = " +/- ")
         }),
         .keep = "none"
       )

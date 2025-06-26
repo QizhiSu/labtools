@@ -2,31 +2,38 @@
 % Please edit documentation in R/metadata_extraction.R
 \name{assign_meta}
 \alias{assign_meta}
-\title{Assign meta data (at the moment only SMILES) to the data}
+\title{Assign structural metadata (SMILES, InChIKey, InChI) to your dataset}
 \usage{
 assign_meta(data, meta_file)
 }
 \arguments{
-\item{data}{Your data after \code{extract_meta()}.}
+\item{data}{A data.frame or tibble, typically the result after running \code{extract_meta()}.}
 
-\item{meta_file}{A *.txt file containg at least Name and SMILES, which can
-be manully prepared or converted from *MOL files by the \code{combine_mol2sdf()}
-and \code{extract_structure()} functions from the \code{mspcompiler} package
-\url{https://github.com/QizhiSu/mspcompiler}.}
+\item{meta_file}{A text-based file (e.g., *.csv or *.txt) containing at least "Name" and "SMILES",
+and optionally "InChIKey" and "InChI". File can be created manually or generated from MOL files.}
 }
 \value{
-A dataframe or tibble with SMILES assigned.
+A data.frame or tibble with missing SMILES, InChIKey, and InChI values filled in where available.
 }
 \description{
-If you have some compounds that are not present in the Pubchem, there
-will be no SMILES retrieved for these compounds using \code{extract_meta}.
-This function offers a way to assign SMIELS for them. However, a txt file
-containing Name and SMILES of these compounds is required. There are two options
-to prepare this txt file. One is to prepare it manually, the column names must
-be Name and SMILES, respectively(case-insensitive). Another one is to prepare
-*.MOL files of these molecules and extract SMILES using the \code{combine_mol2sdf()}
-and \code{extract_structure()} functions from the \code{mspcompiler} package
-\url{https://github.com/QizhiSu/mspcompiler}. Note that the name in your *.txt
-file or *.MOL files have to be consistent with the one you have in your data
-as Name is used for matching.
+If some compounds are not found in PubChem, \code{extract_meta()} will not
+retrieve their structural information such as SMILES, InChIKey, or InChI.
+This function provides a way to manually assign these values based on name matching.
+}
+\details{
+A metadata file (e.g., CSV or TXT) containing at least compound names and SMILES is required.
+Column names in the file are case-insensitive and must include "Name" and "SMILES".
+If available, "InChIKey" and "InChI" will also be assigned.
+
+There are two ways to prepare this metadata file:
+\enumerate{
+\item Manually create a file with at least "Name" and "SMILES" columns.
+\item Convert MOL files into a structured table using
+\code{combine_mol2sdf()} and \code{extract_structure()} from the
+\pkg{mspcompiler} package:
+\url{https://github.com/QizhiSu/mspcompiler}.
+}
+
+Note: compound names in your metadata file must exactly match those in your main dataset
+(case-insensitive, whitespace-trimmed) for successful assignment.
 }

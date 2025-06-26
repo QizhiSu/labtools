@@ -105,29 +105,3 @@ df2msp <- function(df, output_file) {
   # Close connection
   close(con)
 }
-
-# section -----------------------------------------------------------
-export_smiles_to_mol <- function(df, id_col = "ID", smiles_col = "SMILES", output_dir = "mol_files") {
-  # Create output directory if it doesn't exist
-  dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
-
-  # Loop through each row
-  for (i in seq_len(nrow(df))) {
-    id <- df[[id_col]][i]
-    smiles <- df[[smiles_col]][i]
-
-    # Parse SMILES to molecule
-    mol <- tryCatch(parse.smiles(smiles)[[1]], error = function(e) NULL)
-
-    if (!is.null(mol)) {
-      # Generate 2D coordinates (optional but useful for visualization)
-    mol <-  tryCatch(generate.2d.coordinates(mol), error = function(e) NULL)
-
-      # Write to MOL file
-      file_path <- file.path(output_dir, paste0(id, ".mol"))
-      write.molecules(mol, file_path)
-    } else {
-      warning(sprintf("Failed to parse SMILES: %s (ID: %s)", smiles, id))
-    }
-  }
-}
