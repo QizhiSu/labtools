@@ -10,6 +10,8 @@
 #'
 #' @return an image showing the chemical structure
 #' @rawNamespace import(rcdk, except = "matches")
+#'
+#' @export
 
 plot_molecule <- function(molecule, name = NULL, sma = NULL, ...) {
   # check if rcdk is installed
