@@ -2,78 +2,38 @@
 % Please edit documentation in R/metadata_extraction.R
 \name{extract_meta}
 \alias{extract_meta}
-\title{Extract metadata from PubChem for compounds with CIDs}
+\title{Extract metadata from PubChem for compounds with known CIDs}
 \usage{
 extract_meta(
   data,
   cas = FALSE,
   flavornet = FALSE,
   synonyms = FALSE,
+  uses = FALSE,
   verbose = TRUE,
   checkpoint_dir = "."
 )
 }
 \arguments{
-\item{data}{A data.frame or tibble containing at least a \code{CID} column
-(integer or numeric). Typically produced by \code{\link{extract_cid}}.}
+\item{data}{A data.frame containing a 'CID' column (PubChem compound IDs)}
 
-\item{cas}{Logical, whether to extract CAS registry numbers. If \code{TRUE},
-CAS extraction is performed with fallback from PubChem sections to synonyms.}
+\item{cas}{Logical. If TRUE, attempt to extract CAS numbers from pc_sect and synonyms.}
 
-\item{flavornet}{Logical, whether to extract Flavornet sensory descriptors.
-Requires \code{cas = TRUE} because it depends on CAS numbers.}
+\item{flavornet}{Logical. If TRUE, attempt to extract Flavornet sensory descriptors.}
 
-\item{synonyms}{Logical, whether to extract compound synonyms from PubChem.}
+\item{synonyms}{Logical. If TRUE, attempt to extract synonym list from PubChem.}
 
-\item{verbose}{Logical, whether to print progress and status messages.}
+\item{uses}{Logical. If TRUE, attempt to extract compound use information from PubChem.}
 
-\item{checkpoint_dir}{Character, directory path where checkpoint files are
-stored and loaded. Defaults to current directory \code{"."}.}
+\item{verbose}{Logical. If TRUE, print progress messages.}
+
+\item{checkpoint_dir}{Directory to save checkpoint files (optional, currently not used).}
 }
 \value{
-A data.frame or tibble identical to the input \code{data}, but with
-added columns for the extracted metadata:
-\itemize{
-\item Core PubChem properties: \code{Formula}, \code{MW}, \code{SMILES},
-\code{InChI}, \code{InChIKey}, \code{IUPAC_Name}, \code{Exact_Mass}.
-\item CAS number (in a new column \code{CAS_1} if \code{CAS} already exists).
-\item Flavornet sensory data in \code{Flavornet}.
-\item Compound synonyms in \code{Synonyms}.
-}
-
-Intermediate results are saved as checkpoint files in \code{checkpoint_dir}.
-On re-running with the same input data, the function will resume from the
-checkpoint to avoid repeating completed queries.
+A data.frame with new metadata columns added.
 }
 \description{
-\code{extract_meta()} extracts chemical metadata from PubChem based on the
-CID (Compound ID) column in the input data.frame or tibble. It retrieves
-structural properties such as molecular formula, molecular weight, SMILES,
-InChI, InChIKey, IUPAC name, and exact mass. Additionally, it can extract CAS
-numbers, Flavornet sensory data, and synonyms from PubChem when requested.
-}
-\details{
-The function supports checkpointing to save intermediate results, allowing
-long-running queries to resume from the last saved state without repeating
-completed steps.
-
-This function requires internet access to query the PubChem and Flavornet
-databases via the \pkg{webchem} package.
-
-The CAS number extraction tries first from PubChem's "section" data, and if
-unsuccessful, falls back to searching the synonyms list for CAS-like strings.
-
-Checkpoints are matched via a hash of the input \code{data} to ensure
-correspondence between saved intermediate results and current inputs.
-}
-\examples{
-\dontrun{
-library(webchem)
-# Suppose df_cid is your data with a CID column already obtained by extract_cid()
-df_meta <- extract_meta(df_cid, cas = TRUE, flavornet = TRUE, synonyms = TRUE)
-}
-
-}
-\seealso{
-\code{\link{extract_cid}}, \pkg{webchem}
+This function enriches a data frame with structural and contextual metadata from PubChem
+using available CIDs, including molecular properties, CAS numbers, synonyms, Flavornet descriptors,
+and uses information.
 }

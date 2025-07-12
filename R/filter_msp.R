@@ -10,15 +10,15 @@
 #'
 #' @import purrr
 #' @import dplyr
-#' @import mspcompiler
 #'
 #' @export
 #'
 filter_msp <- function(msp, cmp_list, keep_napd8 = TRUE, output) {
   # check if mspcompiler is installed
   if (!requireNamespace("mspcompiler", quietly = TRUE)) {
-    stop("mspcompiler is not installed. Please install it first.",
-      call. = FALSE
+    stop("The 'mspcompiler' package is required for this function but is not installed.\n",
+         "Please install it using: devtools::install_github('QizhiSu/mspcompiler')",
+         call. = FALSE
     )
   }
 

@@ -54,7 +54,7 @@ body {
 }
 &#10;.subtitle {
   font-size: 1.4rem;
-  color: #7c3aed;
+  color:rgb(58, 100, 237);
   font-weight: 600;
   margin: 20px 0 15px 0;
   text-align: center;
@@ -156,11 +156,11 @@ body {
   font-weight: 600;
 }
 &#10;.highlight-text {
-  color: #ff7b72;
+  color:rgb(62, 77, 193);
   font-weight: 500;
 }
 &#10;.success-text {
-  color: #3fb950;
+  color:rgb(63, 185, 158);
   font-weight: 500;
 }
 &#10;.warning-text {
@@ -169,7 +169,7 @@ body {
 }
 &#10;code {
   background: #161b22;
-  color: #ffa657;
+  color: #58a6ff;
   padding: 4px 8px;
   border-radius: 6px;
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -187,7 +187,7 @@ body {
 }
 &#10;pre code {
   background: transparent;
-  color: #e6edf3;
+  color:rgb(35, 148, 193);
   padding: 0;
   border: none;
 }
@@ -203,7 +203,7 @@ body {
   font-weight: 600;
 }
 &#10;em {
-  color: #7c3aed;
+  color: #58a6ff;
   font-style: italic;
 }
 &#10;a {
@@ -279,19 +279,43 @@ workflows*
 
 ------------------------------------------------------------------------
 
+## 🎯 **About This Package**
+
+<div class="info-box">
+
+**labtools** is specifically designed for our lab’s **analytical
+chemistry workflows** and daily data processing needs. This package
+prioritizes **ease of use for researchers who may not be R experts**
+over maximum flexibility.
+
+**Design Philosophy:** - **Laboratory-focused**: Built around common
+analytical chemistry tasks and workflows - **User-friendly**: Simple
+function calls with sensible defaults for non-R experts -
+**Workflow-oriented**: Functions designed to work together in typical
+lab data processing pipelines - **Trade-offs**: Some flexibility is
+sacrificed for simplicity and ease of use
+
+**Please use according to your needs** - if you require maximum
+flexibility, consider using the underlying packages directly (webchem,
+rcdk, etc.).
+
+</div>
+
+------------------------------------------------------------------------
+
 ## <a id="english"></a>🌟 **Key Features**
 
 <div class="feature-table">
 
-| Feature                              | Description                                                                 |
-|--------------------------------------|-----------------------------------------------------------------------------|
-| 🔍 **Chemical Metadata Extraction**  | Automated retrieval from PubChem database with intelligent retry mechanisms |
-| 🧬 **Structure Database Management** | Build and visualize chemical structure databases with advanced filtering    |
-| 📊 **MS Data Processing**            | Export optimized databases for MS-FINDER and MS-DIAL software               |
-| 🔬 **2D GC-MS Analysis**             | Process Canvas exports and combine multi-sample data with precision         |
-| ⚗️ **Chemical Structure Conversion** | SMILES to MOL file conversion with 2D coordinate generation                 |
-| 📈 **Semi-quantification Tools**     | Advanced analytical quantification with machine learning integration        |
-| 🎯 **Interactive Visualization**     | Shiny-based chemical structure navigation and spectrum plotting             |
+| Feature                              | Description                                                                          |
+|--------------------------------------|--------------------------------------------------------------------------------------|
+| 🔍 **Chemical Metadata Extraction**  | Enhanced automated retrieval from PubChem with robust error handling and CAS parsing |
+| 🧬 **Structure Database Management** | Build and visualize chemical structure databases with advanced filtering             |
+| 📊 **MS Data Processing**            | Export optimized databases for MS-FINDER and MS-DIAL software                        |
+| 🔬 **2D GC-MS Analysis**             | Process Canvas exports and combine multi-sample data with precision                  |
+| ⚗️ **Chemical Structure Conversion** | SMILES to MOL file conversion with 2D coordinate generation                          |
+| 📈 **Semi-quantification Tools**     | Advanced analytical quantification with machine learning integration                 |
+| 🎯 **Interactive Visualization**     | Shiny-based chemical structure navigation and spectrum plotting                      |
 
 </div>
 
@@ -300,6 +324,22 @@ workflows*
 <strong>💡 New to R?</strong> For detailed help on any function, use
 <code>?function_name</code> in R console (e.g.,
 <code>?extract_cid</code>)
+
+</div>
+
+<div class="info-box">
+
+<strong>🆕 Latest Updates (v0.3.00):</strong> - **Enhanced metadata
+extraction**: Improved <code>parse_cas_clean()</code>,
+<code>extract_cid()</code>, and <code>extract_meta()</code> functions -
+**Better dependency management**: <code>mspcompiler</code> is now
+optional - install only when needed - **Robust error handling**:
+Comprehensive input validation and informative error messages -
+**Improved documentation**: Detailed examples and parameter explanations
+for all functions - **Enhanced synonyms extraction**: Fixed and
+optimized PubChem synonyms retrieval - **ASCII compliance**: All code
+now uses ASCII characters for better portability - **Comprehensive
+testing**: All functions pass R CMD check with zero errors and warnings
 
 </div>
 
@@ -326,6 +366,19 @@ devtools::install_github("QizhiSu/labtools")
 - **R** ≥ 4.0.0
 - **Java** ≥ 8 (for rcdk package)
 - **Internet connection** (for PubChem API access)
+
+### Optional Dependencies
+
+Some functions require additional packages that are not automatically
+installed:
+
+- **mspcompiler**: Required for MSP library filtering (`filter_msp()`
+  function)
+
+  ``` r
+  # Install when needed
+  devtools::install_github("QizhiSu/mspcompiler")
+  ```
 
 ### Getting Help
 
@@ -404,10 +457,7 @@ compounds_cid <- extract_cid(
   name_col = "Name",         # Column with chemical names (default: "Name")
   cas_col = "CAS",           # Column with CAS numbers (default: "CAS")
   inchikey_col = "InChIKey", # Column with InChIKeys (default: "InChIKey")
-  timeout = 300,             # API timeout in seconds (default: 180)
-  verbose = TRUE,            # Show progress messages (default: TRUE)
-  checkpoint_file = "cid_checkpoint.rds",  # Checkpoint file (default)
-  use_checkpoint = TRUE      # Use checkpoint functionality (default: TRUE)
+  verbose = TRUE             # Show progress messages (default: TRUE)
 )
 
 # Extract comprehensive metadata
@@ -417,8 +467,8 @@ compounds_meta <- extract_meta(
   cas = TRUE,                # Extract CAS numbers (default: FALSE)
   flavornet = TRUE,          # Extract Flavornet data (default: FALSE)
   synonyms = TRUE,           # Extract synonyms (default: FALSE)
-  verbose = TRUE,            # Show progress (default: TRUE)
-  checkpoint_dir = "."       # Checkpoint directory (default: ".")
+  uses = TRUE,               # Extract compound uses (default: FALSE)
+  verbose = TRUE             # Show progress (default: TRUE)
 )
 
 # Add chemical classification using ClassyFire
@@ -432,12 +482,11 @@ compounds_classified <- extract_classyfire(
 
 **Key Parameters Explained:** - `name_col`, `cas_col`, `inchikey_col`:
 Specify which columns contain identifiers (defaults: “Name”, “CAS”,
-“InChIKey”) - `timeout`: How long to wait for PubChem API responses
-(default: 180 seconds, increase for slow connections) - `verbose`: Set
-to `FALSE` to suppress progress messages (default: TRUE) -
-`checkpoint_file`: Saves progress to resume interrupted extractions
-(default: “cid_checkpoint.rds”) - `use_checkpoint`: Enable/disable
-checkpoint functionality (default: TRUE)
+“InChIKey”) - `verbose`: Set to `FALSE` to suppress progress messages
+(default: TRUE) - `cas`, `flavornet`, `synonyms`, `uses`: Enable
+extraction of specific metadata types (all default: FALSE) - Functions
+automatically handle network errors and provide informative progress
+messages
 
 </div>
 
@@ -667,6 +716,9 @@ frames
 <div class="code-block">
 
 ``` r
+# Note: MSP filtering requires the mspcompiler package
+# Install if needed: devtools::install_github("QizhiSu/mspcompiler")
+
 # Prepare compound list for filtering
 compounds_to_keep <- data.frame(
   Name = c("Caffeine", "Aspirin", "Glucose"),
@@ -759,6 +811,21 @@ results <- organize_con(concentrations, sample_codes)
 ## <a id="中文"></a>🧪 **labtools**: 分析化学实验室数据处理工具包
 
 > **专为分析化学工作流程设计的综合性R包**
+
+<div class="info-box">
+
+**labtools**
+专门为**分析化学实验室工作流程**和日常数据处理需求而设计。本包优先考虑**不太熟悉R语言的研究人员的易用性**，而非最大的灵活性。
+
+**设计理念：** - **实验室导向**：围绕常见的分析化学任务和工作流程构建 -
+**用户友好**：为非R专家提供简单的函数调用和合理的默认设置 -
+**工作流导向**：函数设计为在典型的实验室数据处理流程中协同工作 -
+**权衡取舍**：为了简单性和易用性，牺牲了一些灵活性
+
+**请根据您的需求使用** -
+如果您需要最大的灵活性，请考虑直接使用底层包（webchem、rcdk等）。
+
+</div>
 
 <div class="feature-table">
 

@@ -7,13 +7,16 @@
 assign_meta(data, meta_file)
 }
 \arguments{
-\item{data}{A data.frame or tibble, typically the result after running \code{extract_meta()}.}
+\item{data}{A data.frame or tibble, typically the result after running \code{extract_meta()}.
+Must contain a "Name" column for matching.}
 
 \item{meta_file}{A text-based file (e.g., *.csv or *.txt) containing at least "Name" and "SMILES",
-and optionally "InChIKey" and "InChI". File can be created manually or generated from MOL files.}
+and optionally "InChIKey" and "InChI". File can be created manually or generated from MOL files.
+Supported formats include CSV, TSV, Excel, and other formats supported by \code{\link[rio]{import}}.}
 }
 \value{
 A data.frame or tibble with missing SMILES, InChIKey, and InChI values filled in where available.
+Only missing values are updated; existing values are preserved.
 }
 \description{
 If some compounds are not found in PubChem, \code{extract_meta()} will not
@@ -34,6 +37,24 @@ There are two ways to prepare this metadata file:
 \url{https://github.com/QizhiSu/mspcompiler}.
 }
 
-Note: compound names in your metadata file must exactly match those in your main dataset
-(case-insensitive, whitespace-trimmed) for successful assignment.
+The function performs case-insensitive, whitespace-trimmed matching between compound names
+in the main dataset and the metadata file. This ensures robust matching even with minor
+formatting differences.
+
+Column name matching is also case-insensitive for flexibility in input file formats.
+}
+\note{
+Compound names in your metadata file must match those in your main dataset for successful
+assignment. Consider standardizing compound names before using this function.
+}
+\examples{
+\dontrun{
+# Assuming you have a CSV file with compound metadata
+data_with_meta <- assign_meta(my_data, "compound_metadata.csv")
+
+# The metadata file should have columns like:
+# Name, SMILES, InChIKey, InChI
+# "benzene", "c1ccccc1", "UHOVQNZJYSORNB-UHFFFAOYSA-N", "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
+}
+
 }

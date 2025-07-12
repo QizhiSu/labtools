@@ -32,8 +32,10 @@ The fallback using SMILES/InChI via \code{submit_query()} is \strong{not used}, 
 \examples{
 \dontrun{
 library(classyfireR)
-df <- data.frame(InChIKey = c("XMGQYMWWDOXHJM-UHFFFAOYSA-N"),
-                 Name = c("Limonene"))
+df <- data.frame(
+  InChIKey = c("XMGQYMWWDOXHJM-UHFFFAOYSA-N"),
+  Name = c("Limonene")
+)
 extract_classyfire(df)
 }
 

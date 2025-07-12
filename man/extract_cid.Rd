@@ -2,71 +2,73 @@
 % Please edit documentation in R/metadata_extraction.R
 \name{extract_cid}
 \alias{extract_cid}
-\title{Extract PubChem Compound ID (CID) using various identifiers}
+\title{Extract PubChem CIDs via InChIKey, CAS, or Name (wrapper of webchem::get_cid)}
 \usage{
 extract_cid(
   data,
   name_col = "Name",
   cas_col = "CAS",
   inchikey_col = "InChIKey",
-  timeout = 180,
-  verbose = TRUE,
-  checkpoint_file = "cid_checkpoint.rds",
-  use_checkpoint = TRUE
+  verbose = TRUE
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} or \code{tibble} containing compound
-information. A column named \code{"CID"} will be created if not already present.}
+\item{data}{A data.frame containing chemical information.}
 
-\item{name_col}{The column name or index containing compound names to be used for CID lookup. Defaults to `"Name"``.}
+\item{name_col}{Name or index of the column containing substance names (optional).
+Can be a character string (column name) or integer (column index). Default is "Name".}
 
-\item{cas_col}{The column name or index containing CAS numbers to be used for CID lookup. Defaults to `"CAS"``.}
+\item{cas_col}{Name or index of the column containing CAS numbers (optional).
+Can be a character string (column name) or integer (column index). Default is "CAS".}
 
-\item{inchikey_col}{The column name or index containing InChIKeys to be used for CID lookup. Defaults to \code{"InChIKey"}.}
+\item{inchikey_col}{Name or index of the column containing InChIKeys (optional).
+Can be a character string (column name) or integer (column index). Default is "InChIKey".}
 
-\item{timeout}{Timeout (in seconds) for each PubChem request. Defaults to 120.}
-
-\item{verbose}{Logical. If \code{TRUE}, print progress and status messages. Defaults to \code{TRUE}.}
-
-\item{checkpoint_file}{File path for storing and resuming from checkpoint. Defaults to \code{"cid_checkpoint.rds"}.}
-
-\item{use_checkpoint}{Logical. Whether to use and save checkpoint file. Defaults to \code{TRUE}.}
+\item{verbose}{Logical. Whether to print progress messages. Default is \code{TRUE}.}
 }
 \value{
-The input \code{data.frame} with a \code{CID} column filled in. Any found CIDs
-will be shown with a success message in the console indicating the identifier type used.
+A data.frame with a new or updated \code{CID} column containing matched PubChem CIDs.
+Existing CID values are preserved and only missing values are filled.
 }
 \description{
-\code{extract_cid()} retrieves PubChem CIDs based on compound identifiers
-such as InChIKey, CAS number, or compound name. It attempts each identifier
-in order and records the CID in a new column. Lookup results are saved to a
-checkpoint file to support resuming interrupted processes.
+A convenience wrapper around \code{\link[webchem]{get_cid}} that looks up PubChem Compound IDs (CIDs)
+using InChIKey, CAS number(s), or chemical names - in that order of priority. It supports flexible column
+specifications (either by name or index), parses CAS strings containing multiple entries, and gives informative
+messages if specified columns are missing.
 }
 \details{
-The function uses \code{webchem::get_cid()} under the hood and handles
-timeouts or web request errors gracefully. If a compound cannot be matched
-to a CID, it is reported clearly in the console output. For efficiency and
-fault tolerance, results are saved to disk every 10 records using
-\code{saveRDS()}. If a matching checkpoint is found, the function resumes
-from it.
+The function searches for CIDs in the following priority order:
+\enumerate{
+\item InChIKey (most reliable)
+\item CAS numbers (parsed using \code{\link{parse_cas_clean}})
+\item Chemical names (least reliable due to naming variations)
+}
 
-CID lookup is attempted in the following order (if columns are provided): InChIKey, CAS, Name.
-Timeouts and unexpected errors during PubChem queries are caught silently and do not interrupt the process.
-The function prints a summary when finished and optionally plays a notification sound if the \code{beepr} package is installed.
+The function handles network errors gracefully and provides detailed progress information.
+Multiple CAS numbers in a single cell are supported and parsed automatically.
 }
 \examples{
 \dontrun{
+# Basic usage with name and CAS columns
 df <- data.frame(
-  Name = c("bisphenol A", "acetone"),
-  InChIKey = c("JUZNXVGZRYFYFW-UHFFFAOYSA-N", NA),
-  CAS = c("80-05-7", NA),
-  stringsAsFactors = FALSE
+  Name = c("benzene", "acetic acid"),
+  CAS = c("71-43-2", "64-19-7")
 )
-df_with_cid <- extract_cid(df, name_col = "Name", cas_col = "CAS", inchikey_col = "InChIKey")
+result <- extract_cid(df)
+
+# Using column indices instead of names
+extract_cid(df, name_col = 1, cas_col = 2)
+
+# With InChIKey column
+df_with_inchi <- data.frame(
+  Name = "benzene",
+  InChIKey = "UHOVQNZJYSORNB-UHFFFAOYSA-N"
+)
+extract_cid(df_with_inchi)
 }
 
 }
 \seealso{
-\code{\link[webchem]{get_cid}}, \code{\link[beepr]{beep}}
+\code{\link{parse_cas_clean}} for CAS number parsing,
+\code{\link[webchem]{get_cid}} for the underlying PubChem query function
 }

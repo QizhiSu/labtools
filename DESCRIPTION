@@ -18,17 +18,14 @@ Depends: R (>= 3.5.0)
 Imports:
     beepr,
     classyfireR,
-    digest,
     dplyr,
     DT,
     ggplot2,
     glue,
     janitor,
-    mspcompiler,
     plotly,
     proxy,
     purrr,
-    R.utils,
     randomForest,
     rcdk,
     rio,
@@ -37,6 +34,8 @@ Imports:
     tibble,
     utils,
     webchem
+Suggests:
+    mspcompiler
 Remotes:
     QizhiSu/mspcompiler,
     aberHRML/classyfireR
