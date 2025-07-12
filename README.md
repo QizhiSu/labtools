@@ -1,260 +1,9 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<!-- Modern Dark Theme CSS -->
-<style>
-body {
-  background-color: #0d1117;
-  color: #e6edf3;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  line-height: 1.6;
-}
-&#10;.main-header {
-  background: linear-gradient(135deg, #1c2128 0%, #21262d 100%);
-  border-radius: 16px;
-  padding: 40px 30px;
-  margin: 30px auto;
-  max-width: 900px;
-  border: 1px solid #30363d;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  position: relative;
-}
-&#10;.language-toggle {
-  position: absolute;
-  top: 20px;
-  right: 25px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-&#10;.language-toggle a {
-  color: #58a6ff;
-  text-decoration: none;
-  font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-&#10;.language-toggle a:hover {
-  background-color: rgba(88, 166, 255, 0.1);
-}
-&#10;.title-section {
-  text-align: center;
-  margin-bottom: 25px;
-}
-&#10;.main-title {
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: #58a6ff;
-  margin: 0 0 15px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-&#10;.r-badge {
-  margin: 15px 0;
-}
-&#10;.subtitle {
-  font-size: 1.4rem;
-  color:rgb(58, 100, 237);
-  font-weight: 600;
-  margin: 20px 0 15px 0;
-  text-align: center;
-}
-&#10;.description {
-  font-size: 1.1rem;
-  color: #8b949e;
-  font-style: italic;
-  text-align: center;
-  margin: 0;
-  max-width: 600px;
-  margin: 0 auto;
-}
-&#10;.badges-container {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 25px 0 0 0;
-}
-&#10;.feature-table {
-  background: #161b22;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #30363d;
-  margin: 20px 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-&#10;.feature-table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-&#10;.feature-table th, .feature-table td {
-  padding: 16px 20px;
-  border-bottom: 1px solid #21262d;
-  text-align: left;
-}
-&#10;.feature-table th {
-  background: #21262d;
-  color: #58a6ff;
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-&#10;.feature-table td {
-  color: #e6edf3;
-}
-&#10;.feature-table tr:last-child td {
-  border-bottom: none;
-}
-&#10;.code-block {
-  background: #161b22;
-  border-radius: 8px;
-  border: 1px solid #30363d;
-  padding: 20px;
-  margin: 20px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-&#10;.info-box {
-  background: linear-gradient(135deg, #1c2128 0%, #21262d 100%);
-  border-left: 4px solid #58a6ff;
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin: 20px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-&#10;.info-box strong {
-  color: #58a6ff;
-}
-&#10;h1 {
-  color: #58a6ff;
-  font-size: 2.5rem;
-  font-weight: 700;
-}
-&#10;h2 {
-  color: #f0f6fc;
-  font-size: 1.8rem;
-  font-weight: 600;
-  border-bottom: 2px solid #21262d;
-  padding-bottom: 10px;
-  margin-top: 40px;
-  margin-bottom: 20px;
-}
-&#10;h3 {
-  color: #58a6ff;
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-top: 30px;
-  margin-bottom: 15px;
-}
-&#10;h4 {
-  color: #7c3aed;
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-top: 25px;
-  margin-bottom: 12px;
-}
-&#10;.accent-text {
-  color: #7c3aed;
-  font-weight: 600;
-}
-&#10;.highlight-text {
-  color:rgb(62, 77, 193);
-  font-weight: 500;
-}
-&#10;.success-text {
-  color:rgb(63, 185, 158);
-  font-weight: 500;
-}
-&#10;.warning-text {
-  color: #d29922;
-  font-weight: 500;
-}
-&#10;code {
-  background: #161b22;
-  color: #58a6ff;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 0.9em;
-  border: 1px solid #30363d;
-  font-weight: 500;
-}
-&#10;pre {
-  background: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  padding: 20px;
-  overflow-x: auto;
-  margin: 15px 0;
-}
-&#10;pre code {
-  background: transparent;
-  color:rgb(35, 148, 193);
-  padding: 0;
-  border: none;
-}
-&#10;blockquote {
-  border-left: 4px solid #30363d;
-  padding-left: 16px;
-  margin: 20px 0;
-  color: #8b949e;
-  font-style: italic;
-}
-&#10;strong {
-  color: #58a6ff;
-  font-weight: 600;
-}
-&#10;em {
-  color: #58a6ff;
-  font-style: italic;
-}
-&#10;a {
-  color: #58a6ff;
-  text-decoration: none;
-}
-&#10;a:hover {
-  text-decoration: underline;
-  color: #79c0ff;
-}
-&#10;table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 20px 0;
-}
-&#10;td, th {
-  border: 1px solid #30363d;
-  padding: 12px 16px;
-  text-align: left;
-}
-&#10;th {
-  background: #21262d;
-  color: #58a6ff;
-  font-weight: 600;
-}
-&#10;tr:nth-child(even) {
-  background: rgba(22, 27, 34, 0.5);
-}
-&#10;/* Fix for markdown rendering */
-.markdown-body {
-  background-color: #0d1117 !important;
-  color: #e6edf3 !important;
-}
-</style>
-
-<div align="center">
-
-<!-- Language Toggle -->
-
-<div style="text-align: right; margin-bottom: 20px;">
-
-<a href="#english" style="color: #58a6ff; text-decoration: none; font-weight: 500;">🇺🇸
-English</a> <span style="color: #6e7681; margin: 0 8px;">\|</span>
-<a href="#中文" style="color: #58a6ff; text-decoration: none; font-weight: 500;">🇨🇳
-中文</a>
-
-</div>
-
-<div class="main-header">
 
 # 🧪 labtools
+
+<div align="center">
 
 <img src="https://img.shields.io/badge/R-276DC3?style=for-the-badge&logo=r&logoColor=white" alt="R" height="32"/>
 
@@ -264,16 +13,17 @@ English</a> <span style="color: #6e7681; margin: 0 8px;">\|</span>
 workflows*
 
 <!-- Badges -->
-<p align="center">
+
 <img src="https://img.shields.io/github/workflow/status/QizhiSu/labtools/R-CMD-check?style=flat-square&logo=github&logoColor=white&labelColor=21262d&color=3fb950" alt="R-CMD-check"/>
 <img src="https://img.shields.io/badge/License-MIT-7c3aed?style=flat-square&labelColor=21262d" alt="License"/>
 <img src="https://img.shields.io/badge/CRAN-not%20yet-ff7b72?style=flat-square&labelColor=21262d" alt="CRAN"/>
 <img src="https://img.shields.io/github/stars/QizhiSu/labtools?style=flat-square&logo=github&logoColor=white&labelColor=21262d&color=d29922" alt="Stars"/>
 <img src="https://img.shields.io/github/issues/QizhiSu/labtools?style=flat-square&logo=github&logoColor=white&labelColor=21262d&color=58a6ff" alt="Issues"/>
 <img src="https://img.shields.io/github/last-commit/QizhiSu/labtools?style=flat-square&logo=github&logoColor=white&labelColor=21262d&color=7c3aed" alt="Last Commit"/>
-</p>
 
-</div>
+<!-- Language Toggle -->
+
+[🇺🇸 English](#english) \| [🇨🇳 中文](#中文)
 
 </div>
 
@@ -281,31 +31,25 @@ workflows*
 
 ## 🎯 **About This Package**
 
-<div class="info-box">
-
-**labtools** is specifically designed for our lab’s **analytical
-chemistry workflows** and daily data processing needs. This package
-prioritizes **ease of use for researchers who may not be R experts**
-over maximum flexibility.
-
-**Design Philosophy:** - **Laboratory-focused**: Built around common
-analytical chemistry tasks and workflows - **User-friendly**: Simple
-function calls with sensible defaults for non-R experts -
-**Workflow-oriented**: Functions designed to work together in typical
-lab data processing pipelines - **Trade-offs**: Some flexibility is
-sacrificed for simplicity and ease of use
-
-**Please use according to your needs** - if you require maximum
-flexibility, consider using the underlying packages directly (webchem,
-rcdk, etc.).
-
-</div>
+> **labtools** is specifically designed for our lab’s **analytical
+> chemistry workflows** and daily data processing needs. This package
+> prioritizes **ease of use for researchers who may not be R experts**
+> over maximum flexibility.
+>
+> **Design Philosophy:** - **Laboratory-focused**: Built around common
+> analytical chemistry tasks and workflows - **User-friendly**: Simple
+> function calls with sensible defaults for non-R experts -
+> **Workflow-oriented**: Functions designed to work together in typical
+> lab data processing pipelines - **Trade-offs**: Some flexibility is
+> sacrificed for simplicity and ease of use
+>
+> **Please use according to your needs** - if you require maximum
+> flexibility, consider using the underlying packages directly (webchem,
+> rcdk, etc.).
 
 ------------------------------------------------------------------------
 
 ## <a id="english"></a>🌟 **Key Features**
-
-<div class="feature-table">
 
 | Feature                              | Description                                                                          |
 |--------------------------------------|--------------------------------------------------------------------------------------|
@@ -317,31 +61,25 @@ rcdk, etc.).
 | 📈 **Semi-quantification Tools**     | Advanced analytical quantification with machine learning integration                 |
 | 🎯 **Interactive Visualization**     | Shiny-based chemical structure navigation and spectrum plotting                      |
 
-</div>
+> **💡 New to R?** For detailed help on any function, use
+> `?function_name` in R console (e.g., `?extract_cid`)
 
-<div class="info-box">
+### 🆕 Latest Updates (v0.3.00)
 
-<strong>💡 New to R?</strong> For detailed help on any function, use
-<code>?function_name</code> in R console (e.g.,
-<code>?extract_cid</code>)
-
-</div>
-
-<div class="info-box">
-
-<strong>🆕 Latest Updates (v0.3.00):</strong> - **Enhanced metadata
-extraction**: Improved <code>parse_cas_clean()</code>,
-<code>extract_cid()</code>, and <code>extract_meta()</code> functions -
-**Better dependency management**: <code>mspcompiler</code> is now
-optional - install only when needed - **Robust error handling**:
-Comprehensive input validation and informative error messages -
-**Improved documentation**: Detailed examples and parameter explanations
-for all functions - **Enhanced synonyms extraction**: Fixed and
-optimized PubChem synonyms retrieval - **ASCII compliance**: All code
-now uses ASCII characters for better portability - **Comprehensive
-testing**: All functions pass R CMD check with zero errors and warnings
-
-</div>
+- **Enhanced metadata extraction**: Improved `parse_cas_clean()`,
+  `extract_cid()`, and `extract_meta()` functions
+- **Better dependency management**: `mspcompiler` is now optional -
+  install only when needed
+- **Robust error handling**: Comprehensive input validation and
+  informative error messages
+- **Improved documentation**: Detailed examples and parameter
+  explanations for all functions
+- **Enhanced synonyms extraction**: Fixed and optimized PubChem synonyms
+  retrieval
+- **ASCII compliance**: All code now uses ASCII characters for better
+  portability
+- **Comprehensive testing**: All functions pass R CMD check with zero
+  errors and warnings
 
 ------------------------------------------------------------------------
 
@@ -943,10 +681,7 @@ compounds_cid <- extract_cid(
   name_col = "Name",         # 包含化学名称的列 (默认: "Name")
   cas_col = "CAS",           # 包含CAS号的列 (默认: "CAS")
   inchikey_col = "InChIKey", # 包含InChIKey的列 (默认: "InChIKey")
-  timeout = 300,             # API超时时间(秒) (默认: 180)
-  verbose = TRUE,            # 显示进度信息 (默认: TRUE)
-  checkpoint_file = "cid_checkpoint.rds",  # 检查点文件 (默认值)
-  use_checkpoint = TRUE      # 使用检查点功能 (默认: TRUE)
+  verbose = TRUE             # 显示进度信息 (默认: TRUE)
 )
 
 # 提取综合元数据
@@ -956,8 +691,8 @@ compounds_meta <- extract_meta(
   cas = TRUE,                # 提取CAS号 (默认: FALSE)
   flavornet = TRUE,          # 提取Flavornet数据 (默认: FALSE)
   synonyms = TRUE,           # 提取同义词 (默认: FALSE)
-  verbose = TRUE,            # 显示进度 (默认: TRUE)
-  checkpoint_dir = "."       # 检查点目录 (默认: ".")
+  uses = TRUE,               # 提取化合物用途 (默认: FALSE)
+  verbose = TRUE             # 显示进度 (默认: TRUE)
 )
 
 # 使用ClassyFire添加化学分类
@@ -970,11 +705,10 @@ compounds_classified <- extract_classyfire(
 ```
 
 **关键参数说明:** - `name_col`, `cas_col`, `inchikey_col`:
-指定包含标识符的列 (默认值: “Name”, “CAS”, “InChIKey”) - `timeout`:
-等待PubChem API响应的时间 (默认: 180秒，网络慢时可增加) - `verbose`:
-设为 `FALSE` 可抑制进度信息 (默认: TRUE) - `checkpoint_file`:
-保存进度以便恢复中断的提取 (默认: “cid_checkpoint.rds”) -
-`use_checkpoint`: 启用/禁用检查点功能 (默认: TRUE)
+指定包含标识符的列 (默认值: “Name”, “CAS”, “InChIKey”) - `verbose`: 设为
+`FALSE` 可抑制进度信息 (默认: TRUE) - `cas`, `flavornet`, `synonyms`,
+`uses`: 启用特定元数据类型的提取 (全部默认: FALSE) -
+函数自动处理网络错误并提供详细的进度信息
 
 </div>
 
