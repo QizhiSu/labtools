@@ -92,8 +92,12 @@ parse_cas_clean <- function(cas_string) {
 #'   Can be a character string (column name) or integer (column index). Default is "InChIKey".
 #' @param verbose Logical. Whether to print progress messages. Default is \code{TRUE}.
 #'
-#' @return A data.frame with a new or updated \code{CID} column containing matched PubChem CIDs.
-#'   Existing CID values are preserved and only missing values are filled.
+#' @return A data.frame with:
+#' \itemize{
+#'   \item \code{CID}: Newly extracted PubChem CIDs
+#'   \item \code{old_CID}: Original CID values (if CID column already existed)
+#' }
+#' If a CID column already exists, old values are saved as \code{old_CID} and new values are extracted.
 #'
 #' @details
 #' The function searches for CIDs in the following priority order:
@@ -105,6 +109,13 @@ parse_cas_clean <- function(cas_string) {
 #'
 #' The function handles network errors gracefully and provides detailed progress information.
 #' Multiple CAS numbers in a single cell are supported and parsed automatically.
+#'
+#' If a CID column already exists in the input data:
+#' \itemize{
+#'   \item Old CID values are saved as \code{old_CID}
+#'   \item All CID values are reset and re-extracted
+#'   \item A warning message is displayed informing the user
+#' }
 #'
 #' @export
 #'
@@ -135,76 +146,64 @@ extract_cid <- function(data,
                         cas_col = "CAS",
                         inchikey_col = "InChIKey",
                         verbose = TRUE) {
-  # Ensure CID column exists
-  if (!"CID" %in% names(data)) data$CID <- NA_integer_
-
-  # Helper: Convert column index to name
-  col_to_name <- function(col, df) {
-    if (is.null(col)) {
-      return(NULL)
+  # Handle existing CID column
+  has_existing_cid <- "CID" %in% names(data)
+  if (has_existing_cid) {
+    n_existing <- sum(!is.na(data$CID))
+    if (verbose) {
+      message("WARNING: CID column already exists with ", n_existing, " values. Old CID values will be saved as 'old_CID' and new CID values will be extracted.")
     }
+    data$old_CID <- data$CID
+    data$CID <- NA_integer_
+  } else {
+    data$CID <- NA_integer_
+  }
+
+  # Convert column identifiers to names
+  col_to_name <- function(col, df) {
+    if (is.null(col)) return(NULL)
     if (is.numeric(col)) names(df)[col] else as.character(col)
   }
 
-  # Convert input column identifiers to actual column names
   name_col <- col_to_name(name_col, data)
   cas_col <- col_to_name(cas_col, data)
   inchikey_col <- col_to_name(inchikey_col, data)
 
-  # Check column existence and provide informative messages
+  # Check column existence
   all_cols <- list(name = name_col, cas = cas_col, inchikey = inchikey_col)
   present <- vapply(all_cols, function(x) !is.null(x) && x %in% names(data), logical(1))
   missing_cols <- unlist(all_cols[!present])
 
   if (all(!present)) {
-    stop(
-      "ERROR: None of the specified columns exist in the input data: ",
-      paste(missing_cols, collapse = ", ")
-    )
+    stop("ERROR: None of the specified columns exist in the input data: ", paste(missing_cols, collapse = ", "))
   }
 
   if (any(!present)) {
-    message(
-      "WARNING: The following columns are not found and will be skipped: ",
-      paste(missing_cols, collapse = ", ")
-    )
+    message("WARNING: The following columns are not found and will be skipped: ", paste(missing_cols, collapse = ", "))
   }
 
-  # Helper: Create lookup named vector from webchem result
+  # Helper function to create lookup from webchem result
   make_lookup <- function(res_df) {
-    if (is.null(res_df) || nrow(res_df) == 0) {
-      return(list())
-    }
-
-    # Check for expected columns in webchem result
+    if (is.null(res_df) || nrow(res_df) == 0) return(list())
     if (!"cid" %in% names(res_df)) {
       warning("Expected 'cid' column not found in webchem result")
       return(list())
     }
 
-    # Use 'query' column if available, otherwise use row names or indices
-    query_col <- if ("query" %in% names(res_df)) {
-      res_df$query
-    } else {
-      rownames(res_df)
-    }
-
+    query_col <- if ("query" %in% names(res_df)) res_df$query else rownames(res_df)
     valid <- !is.na(res_df$cid) & res_df$cid != 0
-    if (sum(valid) == 0) {
-      return(list())
-    }
+    if (sum(valid) == 0) return(list())
 
     setNames(res_df$cid[valid], query_col[valid])
   }
 
-  # --- Track results ---
-  n_start <- sum(!is.na(data$CID))
+  # Track results
   n_total <- nrow(data)
   n_found_inchikey <- 0
   n_found_cas <- 0
   n_found_name <- 0
 
-  # Step 1: InChIKey
+  # Step 1: InChIKey (highest priority)
   if (present["inchikey"]) {
     idx <- which(is.na(data$CID))
     ikeys <- unique(na.omit(data[[inchikey_col]][idx]))
@@ -226,7 +225,7 @@ extract_cid <- function(data,
     }
   }
 
-  # Step 2: CAS
+  # Step 2: CAS (second priority)
   if (present["cas"]) {
     idx <- which(is.na(data$CID))
     cas_lists <- lapply(data[[cas_col]][idx], parse_cas_clean)
@@ -254,7 +253,7 @@ extract_cid <- function(data,
     }
   }
 
-  # Step 3: Name
+  # Step 3: Name (lowest priority)
   if (present["name"]) {
     idx <- which(is.na(data$CID))
     name_vec <- unique(na.omit(data[[name_col]][idx]))
@@ -282,10 +281,11 @@ extract_cid <- function(data,
   if (present["inchikey"]) message("  From InChIKey: ", n_found_inchikey)
   if (present["cas"]) message("  From CAS: ", n_found_cas)
   if (present["name"]) message("  From Name: ", n_found_name)
-  message(
-    "Total found: ", n_end, " / ", n_total,
-    " (newly found: ", n_end - n_start, ", not found: ", n_total - n_end, ")"
-  )
+  message("Total found: ", n_end, " / ", n_total, " (not found: ", n_total - n_end, ")")
+
+  if (has_existing_cid) {
+    message("NOTE: Existing CID values have been overwritten.")
+  }
 
   return(data)
 }

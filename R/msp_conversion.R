@@ -73,11 +73,10 @@ df2msp <- function(df, output_file) {
   for (i in seq_len(nrow(df))) {
     compound <- df[i, ]
 
-    # Write all columns except Spectrum and Num_peak
     for (field in colnames(compound)) {
-      if (field != "Spectrum" && field != "Num_peaks" && !is.na(compound[[field]])) {
-      # if (!(field %in% c("Spectrum", "Num_peak", "Num Peaks")) && !is.na(compound[[field]])) {
-        writeLines(paste0(field, ": ", compound[[field]]), con)
+      if (field != "Spectrum" && field != "Num_peaks") {
+        value <- ifelse(is.na(compound[[field]]), "", compound[[field]])
+        writeLines(paste0(field, ": ", value), con)
       }
     }
 
